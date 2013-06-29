@@ -1,0 +1,11 @@
+{
+	"name" : "cookbook",
+	"description" : "its got stuff",
+	"version" : "0.0.1",
+	"private" : true,
+	"dependencies" : {
+		"express" : "3.x",
+		"mongoose" : "3.x.x",
+		"lodash" : "1.2.x"
+	}
+}

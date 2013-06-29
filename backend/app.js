@@ -36,7 +36,7 @@ db.once('open', function() {
 app.use(express.bodyParser());
 //needed for legacy support of DELETE http method
 app.use(express.methodOverride());
-app.use(express.static(_dirname + '../frontend/app'))
+app.use(express.static(_dirname + 'public'))
 
 //bootstrap your routes
 
