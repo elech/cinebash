@@ -1,0 +1,17 @@
+<div id="joinAChannelContainer" style="min-width:480px;float:left;`">
+	<h2><span class="blueText">&rang;&rang;</span> Join a channel</h2>
+	<p>Type the name of the channel you wish to join</p>
+	<input id="query" name="query" ng-model="q">
+	<button id="search" class="btn btn-info" ng-click="searchChannels()">Search</button>
+	<ul style="list-style-type:square;list-style-color:#ccc">
+		<li ng-repeat="channel in channels" ng-click="joinChannel($index)" style="color:#FFFFFF">
+			{{channel.name}}
+		</li>
+	</ul>
+</div>
+<div id="startChannelContainer" class="visible-desktop" style="float:left;">
+	<h2><span class="blueText">&rang;&rang;</span> Start a channel</h2>
+	<p>Select a channel name to start hosting</p>
+	<input id="startChannelName" name="startChannelName" ng-model="startChannelName">
+	<button id="startChannel" class="btn btn-info" ng-click="startChannel()">Start</button>
+</div>

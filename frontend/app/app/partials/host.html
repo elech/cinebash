@@ -1,0 +1,36 @@
+<div class="container-fluid">
+	<div class="row-fluid" ng-controller="MissionController">
+		<div 
+		class="span3">
+		<div class="well"
+			ng-controller="PlayerController">
+			<button class="btn btn-danger" ng-click="play()">Play</button>
+			<button class="btn btn-danger" ng-click="pause()">Pause</button>
+			<button class="btn btn-danger" ng-click="next()">Next</button>
+		</div>
+			<button style ="width:150px"
+			ng-click="playlist=true;"
+			ng-class="playlist ? 'btn btn-info' : 'btn btn-inverse'">
+				Playlist
+			</button>
+			<button class="btn btn-inverse"
+			style="width:150px"
+			ng-click="playlist=false;"
+			ng-class="!playlist ? 'btn btn-info' : 'btn btn-inverse'">
+				Search
+			</button>
+			<playlist style="width:300px"
+			ng-show="playlist">
+			</playlist>
+			<searchlist style="width:300px"
+				playlist="playlist"
+				ng-show="!playlist"
+				songs="songs">
+			</searchlist>
+		</div>
+		<div class="span9">
+			<button ng-click="startItUp()" class="btn btn-info">start it up</button>
+			<div id="ytplayer"></div>
+		</div>
+	</div>
+</div>
