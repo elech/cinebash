@@ -9,4 +9,5 @@ angular.module('myAppTest', ['myApp', 'ngMockE2E'])
 	//$httpBackend.whenGET(/channels\?.*/).passThrough();//.respond(channelsListResponse);
 	$httpBackend.whenGET().passThrough();
 	$httpBackend.whenJSONP().passThrough();
+	$httpBackend.whenPOST().passThrough();
 });

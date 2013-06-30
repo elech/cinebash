@@ -1,23 +1,21 @@
 var express = require('express'),
 	mongoose = require('mongoose'),
 	app = express(),
-	fs = require('fs');
-require('./models/user.js');
-var User = mongoose.model('User');
+	fs = require('fs'),
+	models = fs.readdirSync('./models');
 
-//load models
 
-var files = fs.readdirSync('./models');
-for(var i in files){
-	require("./models/" + files[i]);
+
+var server = require('http').createServer(app);
+var io = require('./sockets.js')(server);
+
+
+
+for(var i in models){
+	require("./models/" + models[i]);
 }
-/*fs.readdir('./models', function(files){
-	if(err) console.log(err);
-	for(var i in files){
-		console.log(files[i]);
-		require(files[i]);
-	}
-});*/
+
+//bootstrap your routes
 
 if(mongoose.connection.readyState == 0){
 	//mongoose.connect('mongodb://matt:goodteam@ec2-54-218-214-218.us-west-2.compute.amazonaws.com:27015/dev');	
@@ -31,16 +29,14 @@ db.once('open', function() {
 	console.log('opened');
 });
 
-/* configs, can be put in another file eventually */
-//allows you to get post variables
+
 app.use(express.bodyParser());
-//needed for legacy support of DELETE http method
-app.use(express.methodOverride());
-app.use(express.static(_dirname + 'public'))
+app.use(express.static(__dirname + '/public'))
+require('./routes.js')(app, io);
+app.post('/player', function(req, res){
+	io.sockets.in("myAuthenticatedChannelName").emit('player:' +req.body.action, {});
+	res.send(200);
+})
 
-//bootstrap your routes
-
-require('./routes.js')(app);
-
-app.listen(3000);
+server.listen(3000);
 module.exports = app;

@@ -11,21 +11,20 @@ var mongoose = require('mongoose'),
 	_ = require('lodash')
 
 
-module.exports = function(){
+module.exports = function(io){
 	function _create(req, res){
+
 		var song = new Song({
 			id: req.body.id, 
 			_playlist: req.body.playlist || null,
-			_user: req.user._id
+			//_user: req.user._id
 		})
-		console.log(req.user._id);
-		song.save(function(err, song){
-			if(err){
-				res.send(503)
-				console.log(err);	
-			} 
+		io.sockets.in("myAuthenticatedChannelName").emit('song:add', {id: req.body.id});
+		res.send(201);
+		/*song.save(function(err, song){
+			if(err) res.send(503)
 			res.send(201, song);
-		});
+		})*/
 	}
 
 	function _list(req, res){

@@ -1,10 +1,12 @@
-var users = require('./controllers/users.js')();
-var songs = require('./controllers/songs.js')();
-var mongoose = require('mongoose');
-var User = mongoose.model('User', require('./models/user.js'));
-var channels = require('./controllers/channels.js')();
 
-module.exports = function(app){
+module.exports = function(app, io){
+	var users = require('./controllers/users.js')();
+	var songs = require('./controllers/songs.js')(io);
+	var mongoose = require('mongoose');
+	var User = mongoose.model('User', require('./models/user.js'));
+	var channels = require('./controllers/channels.js')();
+
+
 	var fakeLogin = function(req, res, next){
 		User.findOne({}, function(err, user){
 			if(err) {
@@ -29,7 +31,7 @@ module.exports = function(app){
 		Songs
 	*/
 	app.get('/songs', songs.list);
-	app.post('/songs', fakeLogin, songs.create);
+	app.post('/songs'/*, fakeLogin*/, songs.create);
 	app.get('/songs/:id', songs.byID);
 	app.put('/songs/:id', songs.edit);
 	app.delete('/songs/:id', songs.del);

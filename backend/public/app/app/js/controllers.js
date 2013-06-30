@@ -7,13 +7,6 @@ angular.module('myApp.controllers', []).
     $scope.channels;
     $scope.q;
 
-    $http.jsonp("http://localhost:3000/channels?callback=JSON_CALLBACK")
-    .success(function(data, status, headers){
-      cconsole.log(data);
-    })
-    .error(function(data){
-      console.log(data + "error");
-    })
     $scope.safeApply = function(fn) {
       var phase = this.$root.$$phase;
       if(phase == '$apply' || phase == '$digest')
@@ -27,9 +20,9 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.searchChannels = function(){
-      $http.jsonp('http://localhost:3000/channels?name=' + $scope.q + "&callback=JSON_CALLBACK").success(function(data) {
-        //console.log(data.channels + " asgag");
-        //$scope.channels = data.channels;
+      $http.get('http://192.168.15.187:3000/channels?name=' + $scope.q).success(function(data) {
+        $scope.channels = data.channels;
+        console.log($scope.channels);
       })
       .error(function(data){
         console.log(data + " failed");
@@ -41,7 +34,7 @@ angular.module('myApp.controllers', []).
     }
   }])
 
-  .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', function($scope, $http, ytp, np){
+  .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', 'youTubeHandler', function($scope, $http, ytp, np, yth){
     $scope.yth = yth;
     $scope.ytp = ytp;
     $scope.playlist = true;
@@ -56,22 +49,45 @@ angular.module('myApp.controllers', []).
     }
   }])
 
-  .controller('PlayerController', ['$scope', 'youTubePlayer', function($scope, ytp){
+  .controller('PlayerController', ['$scope', 'youTubePlayer', '$http', function($scope, ytp, $http){
     $scope.play = function(){
-      var state = ytp.player.getPlayerState();
+      $http.post('/player', {action: 'play'})
+      .success(function(){
+
+      })
+      .error(function(){
+        alert('erroed');
+      })
+/*      var state = ytp.player.getPlayerState();
       if(state == 2){
         ytp.player.playVideo();
       } else if(state == -1 || state == 0){
         ytp.ended();
-      }
+      }*/
     }
 
-    $scope.pause = ytp.pause;
-    
-    $scope.next = ytp.next;
-  }])
-  .controller('HostController', [function(){
+    $scope.pause = function(){
+      $http.post('/player', {action: "pause"})
+      .success(function(data, status, headers){
 
+      })
+      .error(function(){
+        alert('errored');
+      })
+    }
+    $scope.next = function(){
+      $http.post('/player', {action: "next"})
+      .success(function(){
+
+      })
+      .error(function(){
+        alert('errored');
+      })
+
+    }
+  }])
+  .controller('HostController', ['socket', function(socket){
+    socket.connect();
   }])
   .controller('ChannelsController', [function(){
     

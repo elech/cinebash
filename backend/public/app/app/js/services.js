@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('myApp.services', [])
-  .factory('youtubeHandler', ['$http', function($http){
+  .factory('youTubeHandler', ['$http', function($http){
   	var songs = [];
   	var yth = {};
 
@@ -63,17 +63,22 @@ angular.module('myApp.services', [])
     }
 
     ytp.pause = function(){
-      ytp.player.pauseVideo();
+      ytp.safeApply(function(){
+        ytp.player.pauseVideo();
+      });
     }
 
     ytp.play = function(){
-      ytp.player.playVideo();
+      ytp.safeApply(function(){
+        ytp.player.playVideo();
+      })
     }
 
     ytp.next = function(){
-      console.log('Nexting song length: ' + np.getSongs().length);
       if(np.getSongs().length > 0){
-        ytp.player.loadVideoById(np.pop().id, 5, "large");
+        ytp.safeApply(function(){
+          ytp.player.loadVideoById(np.pop().id, 5, "large");
+        })
       }
     }
 
@@ -98,12 +103,13 @@ angular.module('myApp.services', [])
         ytp.ended();
       }
     }
+
     ytp.safeApply = function(fn){
       var phase = $rootScope.$$phase;
       if(phase == '$apply' || phase == '$digest')
-        this.$eval(fn);
+        $rootScope.$eval(fn);
       else
-        this.$apply(fn);
+        $rootScope.$apply(fn);
     }
 
     ytp.ended = function(){
@@ -116,7 +122,7 @@ angular.module('myApp.services', [])
 
     return ytp;
   }])
-  .factory('nowPlayingList', [function(){
+  .factory('nowPlayingList', ['youTubeSong', '$rootScope', function(yts, $rootScope){
     var np = {};
     var songs = [];
     
@@ -132,5 +138,61 @@ angular.module('myApp.services', [])
       return songs.shift();
     }
 
+    np.push = function(id){
+      var song = Object.create(yts);
+      song.id = id;
+      np.safeApply(function(){
+        song.getYTData().success(function(data, status, headers){
+              song.parseYTData(data)
+              np.getSongs().push(song);
+        });
+      });
+    }
+
+    np.safeApply = function(fn){
+      var phase = $rootScope.$$phase;
+      if(phase == '$apply' || phase == '$digest')
+        $rootScope.$eval(fn);
+      else
+        $rootScope.$apply(fn);
+    }
+
     return np;
+  }])
+  .factory('socket', ['nowPlayingList', "youTubePlayer", function(np, ytp){
+      var socketHandler = {};
+      var socket;
+      socketHandler.connect = function(){
+        //this is where the oauth magic happenz
+        socket = io.connect('http://localhost:3000', {query: "Basic=derp"});
+
+        socket.on('song:add', function(data){
+          np.push(data.id);
+          console.log("Got data id: " + data.id);
+        })
+
+        socket.on('news', function(data){
+          console.log(data.hello);
+        })
+
+        socket.on('player:play', function(){
+          console.log('he bout to play')
+          ytp.play();
+        })
+
+        socket.on('player:pause', function(){
+          console.log('he bout to puase')
+          ytp.pause();
+        })
+
+        socket.on('player:next', function(){
+          console.log('player bout to next');
+          ytp.next();
+        })
+      }
+
+
+
+
+      return socketHandler;
   }])
