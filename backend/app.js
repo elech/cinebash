@@ -10,7 +10,6 @@ var server = require('http').createServer(app);
 var io = require('./sockets.js')(server);
 
 
-
 for(var i in models){
 	require("./models/" + models[i]);
 }

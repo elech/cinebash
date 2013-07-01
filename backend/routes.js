@@ -1,4 +1,4 @@
-
+var https = require('https');
 module.exports = function(app, io){
 	var users = require('./controllers/users.js')();
 	var songs = require('./controllers/songs.js')(io);
@@ -8,20 +8,47 @@ module.exports = function(app, io){
 
 
 	var fakeLogin = function(req, res, next){
-		User.findOne({}, function(err, user){
-			if(err) {
-				console.log(err)
+		var provider = req.get('X-Provider');
+		console.log(provider);
+		switch(provider){
+			case "goog":
+				var access_token = req.get('Authorization').split(" ");
+				https.get("https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" + access_token[1], function(res){
+					var data = "";
+					res.on('data', function(chunk){
+						data += chunk;
+					})
+					res.on('end', function(){
+						var email = JSON.parse(data).email;
+						getUserData(email);
+					})
+				});
+				break;
+			case "fb":
+				//do fb
+				break;
+			case "twit":
+				//do twitter?
+				break;
+			default:
 				res.send(400);
-			}
-			req.user = user;
-			next();
-		});
+		}
+
+		function getUserData(email){
+			User.findOne({email: email}, function(err, user){
+				if(err || user == null) res.send(400);
+				req.user = user;
+				next();
+			});			
+		}
 	}
+
+		
 
 	/*
 		Bootstrap the users as a resource
 	*/
-	app.get('/users', users.list);
+	app.get('/users', fakeLogin,users.list);
 	app.post('/users', users.create);
 	app.get('/users/:id', users.byID);
 	app.put('/users/:id', users.edit);
@@ -39,7 +66,7 @@ module.exports = function(app, io){
 	/*
 		Channels
 	*/
-	app.get('/channels', channels.list);
+	app.get('/channels', fakeLogin, channels.list);
 	app.post('/channels', channels.create);
 	app.get('/channels/:id', channels.byID);
 

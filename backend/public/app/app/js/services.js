@@ -51,6 +51,7 @@ angular.module('myApp.services', [])
   }])
   .factory('youTubePlayer', ['$window', 'nowPlayingList', '$rootScope', function($window, np, $rootScope){
     var ytp = {};
+    //loads the youtube javascript api async
     ytp.loadScripts = function(){
       var tag = document.createElement('script');
       tag.src = "https://www.youtube.com/player_api";
@@ -191,8 +192,30 @@ angular.module('myApp.services', [])
         })
       }
 
-
-
-
       return socketHandler;
+  }])
+  .factory('auth', [function(){
+    var auth = {};
+    var access_token;
+
+    auth.getToken = function(){
+      return access_token;
+    }
+
+    auth.setToken = function(token){
+      access_token = token;
+    }
+
+    auth.getTokenFromURL = function(){
+      var oauthParams = {};
+      // parse the query string
+      // from http://oauthssodemo.appspot.com/step/2
+      var params = {}, queryString = location.hash.substring(1),
+        regex = /([^&=]+)=([^&]*)/g, m;
+      while (m = regex.exec(queryString)) {
+        oauthParams[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+      }
+      return oauthParams
+    }
+
   }])
