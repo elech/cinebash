@@ -3,7 +3,7 @@
 /* Controllers */
 
 angular.module('myApp.controllers', []).
-  controller('HomeController', ['$scope', '$http', '$location', function($scope, $http, $location) {
+  controller('HomeController', ['$scope', '$http', '$location', 'auth', '$window', function($scope, $http, $location, auth, $window) {
     $scope.channels;
     $scope.q;
 
@@ -20,7 +20,7 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.searchChannels = function(){
-      $http.get('http://192.168.15.187:3000/channels?name=' + $scope.q).success(function(data) {
+      $http.get('http://localhost:3000/channels?name=' + $scope.q).success(function(data) {
         $scope.channels = data.channels;
         console.log($scope.channels);
       })
@@ -30,8 +30,50 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.startChannel = function(){
-      $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
+      //auth.setChannelName($scope.startChannelName);
+      //$scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
+      var dub = $window.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/app/index-e2e.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+      console.log(dub.location);
     }
+
+/*start of dat shit*/
+/*$scope.$on("$routeChangeStart",function(next,current){
+  var params = {}, queryString = $location.path().substring(1), regex = /([^&=]+)=([^&]*)/g, m;
+  while (m = regex.exec(queryString)) {
+    params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+  }
+  if(params && params.access_token && params.expires_in){
+    $scope.accessToken = params.access_token;
+    $window.sessionStorage.accessToken = params.access_token;
+    $window.sessionStorage.expiresAt = new Date(new Date().getTime() + params.expires_in * 1000).getTime();
+  }
+  if($window.sessionStorage.accessToken && $window.sessionStorage.expiresAt
+    && ($window.sessionStorage.expiresAt > new Date().getTime())){
+      //SEND REQUEST FOR USER INFORMATION HERE
+  }else{
+    var oauth2 = {
+      url: "https://accounts.google.com/o/oauth2/auth",
+      client_id: "{CLIENT_ID}",
+      response_type: "token",
+      redirect_uri: "localhost:3000",
+      scope: "{APIs_YOU_WANT_TO_AUTHORIZE}",
+      state: "initial"
+    };
+    $window.open(oauth2.url + "?client_id=" +
+        oauth2.client_id + "&response_type=" +
+        oauth2.response_type + "&redirect_uri=" +
+        oauth2.redirect_uri + "&scope=" +
+        oauth2.scope + "&state=" +
+        oauth2.state
+        ,"_self");
+
+});*/
+
+
+
+/*end of dat shit*/
+
+
   }])
 
   .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', 'youTubeHandler', function($scope, $http, ytp, np, yth){
@@ -91,4 +133,12 @@ angular.module('myApp.controllers', []).
   }])
   .controller('ChannelsController', [function(){
     
-  }]);
+  }])
+  .controller('LoginController', ['auth', '$location', function(auth, $location){
+    
+    /*if($location.hash()){
+      var at = auth.getOAuthParams().access_token;
+      auth.setToken(at);
+      console.log(at);
+    }*/
+  }])

@@ -160,12 +160,19 @@ angular.module('myApp.services', [])
 
     return np;
   }])
-  .factory('socket', ['nowPlayingList', "youTubePlayer", function(np, ytp){
+  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", function(np, ytp, auth){
       var socketHandler = {};
       var socket;
       socketHandler.connect = function(){
         //this is where the oauth magic happenz
-        socket = io.connect('http://localhost:3000', {query: "Basic=derp"});
+        //needs to be ssl also i guess...
+        //cuz we got access token in get params lulz
+        if(auth.getToken() != null){
+          console.log('first one');
+          socket = io.connect('http://localhost:3000', {query: "auth=" + auth.getToken() + "&provider=goog" + "&name=" + auth.getChannelName()});
+        } else{
+          socket = io.connect('http://localhost:3000', {query: "name=" + auth.getChannelName()});
+        }
 
         socket.on('song:add', function(data){
           np.push(data.id);
@@ -196,17 +203,34 @@ angular.module('myApp.services', [])
   }])
   .factory('auth', [function(){
     var auth = {};
-    var access_token;
+    var access_token = "ya29.AHES6ZTvLXkZm4SJJLZAtyeVOURzBosX78mf7p1i3cA1JWJq";
+    var provider;// = "goog";
+    var channelName;
 
     auth.getToken = function(){
       return access_token;
     }
 
+    auth.setProvider = function(prov){
+      provider = prov;
+    }
+
+    auth.getProvider = function(){
+      return provider;
+    }
     auth.setToken = function(token){
       access_token = token;
     }
 
-    auth.getTokenFromURL = function(){
+    auth.getChannelName = function(){
+      return channelName;
+    }
+
+    auth.setChannelName = function(cn){
+      channelName = cn;
+    }
+
+    auth.getOAuthParams = function(){
       var oauthParams = {};
       // parse the query string
       // from http://oauthssodemo.appspot.com/step/2
@@ -218,4 +242,5 @@ angular.module('myApp.services', [])
       return oauthParams
     }
 
+    return auth;
   }])

@@ -9,7 +9,9 @@ module.exports = function(app, io){
 
 	var fakeLogin = function(req, res, next){
 		var provider = req.get('X-Provider');
-		console.log(provider);
+		//no longer a fake login
+		//the access auth token must be validated for safety
+		//think ;javscript::setTimeout(function())
 		switch(provider){
 			case "goog":
 				var access_token = req.get('Authorization').split(" ");
@@ -20,8 +22,11 @@ module.exports = function(app, io){
 					})
 					res.on('end', function(){
 						var email = JSON.parse(data).email;
+						console.log("Good found the email: " + email);
 						getUserData(email);
 					})
+				}).on('error', function(){
+					console.log('errd');
 				});
 				break;
 			case "fb":
@@ -31,12 +36,13 @@ module.exports = function(app, io){
 				//do twitter?
 				break;
 			default:
-				res.send(400);
+				next();
+				//res.send(400);
 		}
 
 		function getUserData(email){
 			User.findOne({email: email}, function(err, user){
-				if(err || user == null) res.send(400);
+				if(err) res.send(400);
 				req.user = user;
 				next();
 			});			
@@ -66,7 +72,7 @@ module.exports = function(app, io){
 	/*
 		Channels
 	*/
-	app.get('/channels', fakeLogin, channels.list);
+	app.get('/channels'/*, fakeLogin*/, channels.list);
 	app.post('/channels', channels.create);
 	app.get('/channels/:id', channels.byID);
 

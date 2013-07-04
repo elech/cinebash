@@ -7,7 +7,8 @@ var mongoose = require('mongoose'),
 module.exports = function(){
 	function _create(req, res){
 		var channel = new Channel({
-			name: req.body.name
+			name: req.body.name,
+			_owner: mongoose.Types.ObjectId(req.body.ownerId)
 		})
 
 		channel.save(function(err, channel){

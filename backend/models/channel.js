@@ -1,11 +1,11 @@
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema
+	Schema = mongoose.Schema,
+	UserSchema = require('./user.js');
 
 
 var ChannelSchema = new mongoose.Schema({
 	name: {type: String, required: true, unique: true},
-	playlists: [{type: Schema.Types.ObjectId, ref: 'Playlist'}],
-	_user: {type: Schema.Types.ObjectId, ref: 'User'}
+	_owner: {type: Schema.Types.ObjectId, ref: 'User'}
 })
 
 module.exports = ChannelSchema;

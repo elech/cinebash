@@ -13,18 +13,23 @@ var mongoose = require('mongoose'),
 
 module.exports = function(io){
 	function _create(req, res){
-
 		var song = new Song({
 			id: req.body.id, 
-			_playlist: req.body.playlist || null,
-			//_user: req.user._id
+			_user: req.user._id || null
 		})
-		io.sockets.in("myAuthenticatedChannelName").emit('song:add', {id: req.body.id});
-		res.send(201);
-		/*song.save(function(err, song){
-			if(err) res.send(503)
-			res.send(201, song);
-		})*/
+		//check if theres a socket connected
+		//then send the song to the client
+		//and finally save for history
+		if(io.sockets.clients(req.body.channel).length > 0){
+			io.sockets.in(req.body.channel).emit('song:add', {id: req.body.id});
+			song.save(function(err, song){
+				if(err) res.send(503)
+				res.send(201, song);
+			})
+		} else {
+			//chatroom not playing
+			res.send(404);
+		}
 	}
 
 	function _list(req, res){
@@ -35,13 +40,14 @@ module.exports = function(io){
 		
 		dbQuery.exec(function(err, songs){
 			if(err) res.send(503);
-			res.json({
-				songs : songs,
-				pagination : {
+			var resObj = {
+				songs: songs,
+				pagination: {
 					next: "https://" + req.headers.host + req.route.path + queryString.next,
 					prev: "https://" + req.headers.host + req.route.path + queryString.prev
 				}
-			});
+			}
+			res.send(200, resObj);
 		});
 	}
 
