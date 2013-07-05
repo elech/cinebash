@@ -6,7 +6,7 @@ angular.module('myApp.controllers', []).
   controller('HomeController', ['$scope', '$http', '$location', 'auth', '$window', function($scope, $http, $location, auth, $window) {
     $scope.channels;
     $scope.q;
-
+    $scope.dub;
     $scope.safeApply = function(fn) {
       var phase = this.$root.$$phase;
       if(phase == '$apply' || phase == '$digest')
@@ -32,9 +32,27 @@ angular.module('myApp.controllers', []).
     $scope.startChannel = function(){
       //auth.setChannelName($scope.startChannelName);
       //$scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
-      var dub = $window.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/app/index-e2e.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-      console.log(dub.location);
+      $scope.dub = $window.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+
+      //console.log($scope.dub);
+      //$scope.dub.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+      //$scope.dub.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
+      angular.element($scope.dub).bind('message', function(event){
+        console.log('evented');
+      })
+      /*$scope.$watch('$scope.location', function(newVal, oldVal){
+          console.log("Old value");
+          console.log(oldVal);
+          console.log("New value");
+          console.log(newVal);
+      })*/
     }
+
+    $scope.showLocation = function(){
+      console.log($scope.dub.location);
+    }
+
+
 
 /*start of dat shit*/
 /*$scope.$on("$routeChangeStart",function(next,current){
