@@ -32,10 +32,11 @@ db.once('open', function() {
 app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'))
 require('./routes.js')(app, io);
-app.post('/player', function(req, res){
+app.post('/channels/:name/player', function(req, res){
 	io.sockets.in(req.body.channel).emit('player:' +req.body.action, {});
 	res.send(200);
 })
+
 
 server.listen(3000);
 module.exports = app;

@@ -26,16 +26,6 @@ angular.module('myApp.controllers', []).
       })
     }
 
-    $scope.login = function(){
-      auth.getGoogleProvider().then(function(){
-        //do something
-      })
-    }
-
-    $scope.logout = function(){
-      auth.setToken(null);
-    }
-
 
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
@@ -49,12 +39,7 @@ angular.module('myApp.controllers', []).
     $scope.searchChannel = function(){
       ChannelResource.get({channelId: $scope.startChannelName},
         function(data, status, headers){
-          //owns da channel
-          if(data._owner && data._owner.email){
-            $scope.available = true;
-          } else {
-            $scope.available = false;
-          }
+          $scope.available = false;
         },
         function(data){
         if(data.status == 404){
@@ -101,10 +86,10 @@ angular.module('myApp.controllers', []).
     }
   }])
 
-  .controller('PlayerController', ['$scope', '$http', '$route', function($scope, $http, $route){
+  .controller('PlayerController', ['$scope', '$http', '$route', 'nowPlayingList', '$timeout', function($scope, $http, $route, np, $timeout){
     $scope.channelName = $route.current.params.name;
     $scope.play = function(){
-      $http.post('http://localhost:3000/player', {action: 'play', channel: $scope.channelName})
+      $http.post('http://localhost:3000/channels/' + $scope.channelName + '/player', {action: 'play', channel: $scope.channelName})
       .success(function(){
 
       })
@@ -114,7 +99,7 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.pause = function(){
-      $http.post('/player', {action: "pause", channel: $scope.channelName})
+      $http.post('/channels/' + $scope.channelName + '/player', {action: "pause", channel: $scope.channelName})
       .success(function(data, status, headers){
 
       })
@@ -123,15 +108,23 @@ angular.module('myApp.controllers', []).
       })
     }
     $scope.next = function(){
-      $http.post('/player', {action: "next", channel: $scope.channelName})
+      $http.post('/channels/' + $scope.channelName + '/player', {action: "next", channel: $scope.channelName})
       .success(function(){
 
       })
       .error(function(){
         alert('errored');
       })
-
     }
+
+    $scope.safeApply = function(fn) {
+      var phase = this.$root.$$phase;
+      if(phase == '$apply' || phase == '$digest')
+        this.$eval(fn);
+      else
+        this.$apply(fn);
+    };
+
   }])
   .controller('HostController', ['$scope', 'socket', '$rootScope', function($scope, socket, $rootScope){
 
@@ -163,10 +156,5 @@ angular.module('myApp.controllers', []).
     
   }])
   .controller('LoginController', ['auth', '$location', function(auth, $location){
-    
-    /*if($location.hash()){
-      var at = auth.getOAuthParams().access_token;
-      auth.setToken(at);
-      console.log(at);
-    }*/
+
   }])

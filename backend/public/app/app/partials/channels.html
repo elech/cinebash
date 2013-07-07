@@ -1,27 +1,31 @@
-<div class="row-fluid" ng-controller="MissionController" style="width:100%">
+<div class="row-fluid" style="width:100%">
 	<div class="well"
-		ng-controller="PlayerController">
+		ng-controller="PlayerController"
+		style="width:300px">
 		<button class="btn btn-danger" ng-click="play()">Play</button>
 		<button class="btn btn-danger" ng-click="pause()">Pause</button>
 		<button class="btn btn-danger" ng-click="next()">Next</button>
+		
 	</div>
-		<button style ="width:150px"
-		ng-click="playlist=true;"
-		ng-class="playlist ? 'btn btn-info' : 'btn btn-inverse'">
-			Playlist
-		</button>
-		<button class="btn btn-inverse"
-		style="width:150px"
-		ng-click="playlist=false;"
-		ng-class="!playlist ? 'btn btn-info' : 'btn btn-inverse'">
-			Search
-		</button>
-		<playlist style="width:300px"
-		ng-show="playlist">
-		</playlist>
-		<mobile-searchlist style="width:300px"
-			playlist="playlist"
-			ng-show="!playlist"
-			songs="songs">
-		</mobile-searchlist>
-	</div>
+	<button style ="width:150px"
+	ng-click="playlist=true;"
+	ng-class="playlist ? 'btn btn-info' : 'btn btn-inverse'">
+		Playlist
+	</button>
+	<button class="btn btn-inverse"
+	style="width:150px"
+	ng-click="playlist=false;"
+	ng-class="!playlist ? 'btn btn-info' : 'btn btn-inverse'">
+		Search
+	</button>
+	<mobile-playlist 
+	style="width:300px"
+	ng-show="playlist"
+	playlist="playlist">
+	</mobile-playlist>
+	<mobile-searchlist style="width:300px"
+		playlist="playlist"
+		ng-show="!playlist"
+		songs="songs">
+	</mobile-searchlist>
+</div>

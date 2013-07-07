@@ -5,6 +5,7 @@ module.exports = function(app, io){
 	var mongoose = require('mongoose');
 	var User = mongoose.model('User', require('./models/user.js'));
 	var channels = require('./controllers/channels.js')();
+	var playlists = require('./controllers/playlists.js')(io);
 
 
 	var fakeLogin = function(req, res, next){
@@ -37,6 +38,7 @@ module.exports = function(app, io){
 				//do twitter?
 				break;
 			default:
+
 				next();
 				//res.send(400);
 		}
@@ -45,6 +47,7 @@ module.exports = function(app, io){
 			User.findOne({email: email}, function(err, user){
 				if(err) res.send(400);
 				req.user = user;
+				console.log(user);
 				next();
 			});			
 		}
@@ -65,7 +68,7 @@ module.exports = function(app, io){
 		Songs
 	*/
 	app.get('/songs', songs.list);
-	app.post('/songs'/*, fakeLogin*/, songs.create);
+	app.post('/songs', fakeLogin, songs.create);
 	app.get('/songs/:id', songs.byID);
 	app.put('/songs/:id', songs.edit);
 	app.delete('/songs/:id', songs.del);
@@ -77,6 +80,8 @@ module.exports = function(app, io){
 	app.post('/channels', channels.create);
 	app.get('/channels/:id', channels.byID);
 	app.get('/channel', fakeLogin, channels.getChannel)
+
+	app.get('/playlists', playlists.list);
 
 
 	//playlists??

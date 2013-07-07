@@ -132,7 +132,9 @@ angular.module('myApp.services', ['ngResource'])
     }
 
     np.setSongs = function(items){
-      songs = items
+      np.safeApply(function(){
+        songs = items
+      });
     }
 
     np.pop = function(){
@@ -150,13 +152,13 @@ angular.module('myApp.services', ['ngResource'])
       });
     }
 
-    np.safeApply = function(fn){
+    np.safeApply = function(fn) {
       var phase = $rootScope.$$phase;
       if(phase == '$apply' || phase == '$digest')
         $rootScope.$eval(fn);
       else
         $rootScope.$apply(fn);
-    }
+      };
 
     return np;
   }])
@@ -224,11 +226,15 @@ angular.module('myApp.services', ['ngResource'])
           console.log('player bout to next');
           ytp.next();
         })
+
+        socket.on('playlist:get', function(){
+          socket.emit('playlist:send', np.getSongs());
+        })
       }
 
       return socketHandler;
   }])
-  .factory('auth', ['$q', '$rootScope', function($q, $rootScope){
+  .factory('auth', ['$q', '$rootScope', "$window", function($q, $rootScope, $window){
     var config = {};
     var auth = {};
     var access_token;
@@ -265,6 +271,11 @@ angular.module('myApp.services', ['ngResource'])
       return provider;
     }
     auth.setToken = function(token){
+      if(token == null){
+        $window.localStorage.removeItem("token");
+      } else{
+        $window.localStorage.setItem("token", token);
+      }
       access_token = token;
     }
 
@@ -299,7 +310,7 @@ angular.module('myApp.services', ['ngResource'])
         }
       })
       return deferred.promise;
-    } 
+    }
 
     return auth;
   }])

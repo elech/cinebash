@@ -12,14 +12,13 @@ angular.module('myApp.directives', [])
     };
   }]).
 
-  directive('playlist', [function(){
+  directive('playlist', ['nowPlayingList', '$timeout', function(np, $timeout){
     return {
       restrict: 'E',
       controller: function(){
       },
       template: "<div class='playlistContainer'><ul><li ng-repeat=\"song in songs\" style=\"height:100px\"><p>{{song.title}}</p></li></ul>",
       link: function(scope, elems, attr){
-        
       }
     }
   }])
@@ -53,7 +52,7 @@ angular.module('myApp.directives', [])
     }
   }])
   
-  .directive('mobileSearchlist', ['$http', 'youTubeHandler', 'nowPlayingList', function($http, yth, np){
+  .directive('mobileSearchlist', ['$http', 'youTubeHandler', 'nowPlayingList', 'auth', function($http, yth, np, auth){
     return {
       restrict: 'E',
       scope:{
@@ -73,9 +72,9 @@ angular.module('myApp.directives', [])
         $scope.searchSongs = [];
         
         $scope.clickfn = function(ndx){
-          $http.post('http://192.168.15.187:3000/songs', {id: $scope.searchSongs[ndx].id})
+          $http({method: "POST", url: 'http://localhost:3000/songs', data: {id: $scope.searchSongs[ndx].id}, headers: {"Authorization": "Bearer " + auth.getToken()}})
           .success(function(data, status, headers){
-            alert('successed');
+            $scope.playlist = true;
           })
           .error(function(data, status, headers){
             console.log(data);
@@ -88,6 +87,60 @@ angular.module('myApp.directives', [])
           $scope.searchSongs.length = 0;*/
         }
       }
+    }
+  }])
+  .directive('loginPane', ['auth', function(auth){
+    return{
+      restrict: 'E',
+      controller: function($scope){
+        $scope.checkForLogin = function(){
+        }
+        
+        $scope.login = function(){
+          auth.getGoogleProvider().then(function(){
+            $scope.isLoggedIn = true;
+          })
+        }
+
+        $scope.logout = function(){
+          auth.setToken(null);
+          $scope.isLoggedIn = false;
+        }
+      },
+      templateUrl: "partials/loginPane.html",
+      link: function($scope, elem, attr){
+        auth.getToken() == null ? $scope.isLoggedIn = false : $scope.isLoggedIn = true 
+      }
+  }
+  }])
+  .directive('mobilePlaylist', ['nowPlayingList', '$http', function(np, $http){
+    return{
+      restrict: 'E',
+      scope: {
+        playlist: "="
+      },
+      controller: function($scope){
+        $scope.songs = np.getSongs();
+
+        $scope.$watch(function(){ return np.getSongs()}, function(songs){
+          $scope.songs = songs;
+        })
+        $scope.refresh = function(){
+          $http({method: "GET", url: "http://localhost:3000/playlists", params: {channelName: "ericsChannel2"}})
+          .success(function(data, status, headers){
+            np.setSongs(data);
+            //$scope.songs = np.getSongs();
+          })
+          .error(function(){
+            alert('errored');
+          })
+        }
+
+      },
+      template: '<div id="playlistContainer"><button class="btn btn-inverse" ng-click="refresh()">refresh</button><ul><li ng-repeat="song in songs">{{song.title}}</li></ul></div>',
+      link: function($scope, elem, attr){
+
+      } 
     }
   }])
 ;
