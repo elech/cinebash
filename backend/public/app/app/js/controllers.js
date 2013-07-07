@@ -85,10 +85,7 @@ angular.module('myApp.controllers', []).
         this.$apply(fn);
     };
     
-    
   }])
-
-          //$http({method: "GET", url: 'http://localhost:3000/channel', headers: {"Authorization": "Bearer " + auth.getToken()}}).success(function(data, status, headers){
   .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', 'youTubeHandler', function($scope, $http, ytp, np, yth){
     $scope.yth = yth;
     $scope.ytp = ytp;
