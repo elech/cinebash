@@ -12,6 +12,7 @@ module.exports = function(app, io){
 		//no longer a fake login
 		//the access auth token must be validated for safety
 		//think ;javscript::setTimeout(function())
+		provider = "goog";
 		switch(provider){
 			case "goog":
 				var access_token = req.get('Authorization').split(" ");
@@ -75,6 +76,7 @@ module.exports = function(app, io){
 	app.get('/channels'/*, fakeLogin*/, channels.list);
 	app.post('/channels', channels.create);
 	app.get('/channels/:id', channels.byID);
+	app.get('/channel', fakeLogin, channels.getChannel)
 
 
 	//playlists??

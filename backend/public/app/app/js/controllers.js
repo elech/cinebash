@@ -3,10 +3,11 @@
 /* Controllers */
 
 angular.module('myApp.controllers', []).
-  controller('HomeController', ['$scope', '$http', '$location', 'auth', '$window', function($scope, $http, $location, auth, $window) {
+  controller('HomeController', ['$scope', '$http', '$location', 'auth', 'Channel', 'User', function($scope, $http, $location, auth, ChannelResource, UserResource) {
     $scope.channels;
     $scope.q;
     $scope.dub;
+    $scope.auth = auth;
     $scope.safeApply = function(fn) {
       var phase = this.$root.$$phase;
       if(phase == '$apply' || phase == '$digest')
@@ -20,87 +21,81 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.searchChannels = function(){
-      $http.get('http://localhost:3000/channels?name=' + $scope.q).success(function(data) {
+      ChannelResource.query({name: $scope.q}, function(data, status, headers){
         $scope.channels = data.channels;
-        console.log($scope.channels);
       })
-      .error(function(data){
-        console.log(data + " failed");
+    }
+
+    $scope.login = function(){
+      auth.getGoogleProvider().then(function(){
+        //do something
+      })
+    }
+
+    $scope.logout = function(){
+      auth.setToken(null);
+    }
+
+
+  }])
+  .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
+    $scope.available = false;
+    $scope.startChannelName = "";
+    //TODO turn this shit off when it first loads
+    $scope.$watch('startChannelName', function(){
+      $scope.searchChannel();
+    })
+
+    $scope.searchChannel = function(){
+      ChannelResource.get({channelId: $scope.startChannelName},
+        function(data, status, headers){
+          //owns da channel
+          if(data._owner && data._owner.email){
+            $scope.available = true;
+          } else {
+            $scope.available = false;
+          }
+        },
+        function(data){
+        if(data.status == 404){
+          //Channel by the search name not found
+          $scope.available = true;
+          auth.setChannelName($scope.startChannelName);
+        }
       });
     }
 
     $scope.startChannel = function(){
-      //auth.setChannelName($scope.startChannelName);
-      //$scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
-      $scope.dub = $window.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-
-      //console.log($scope.dub);
-      //$scope.dub.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-      //$scope.dub.open("https://accounts.google.com/o/oauth2/auth?response_type=token&client_id=730381482631.apps.googleusercontent.com&redirect_uri=http://localhost:3000/app/login.html&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email");
-      angular.element($scope.dub).bind('message', function(event){
-        console.log('evented');
-      })
-      /*$scope.$watch('$scope.location', function(newVal, oldVal){
-          console.log("Old value");
-          console.log(oldVal);
-          console.log("New value");
-          console.log(newVal);
-      })*/
-    }
-
-    $scope.showLocation = function(){
-      console.log($scope.dub.location);
+      if(auth.getToken() != null){
+        $http({method: "GET", url: "http://localhost:3000/channel", headers: {"Authorization": "Bearer " + auth.getToken()}})
+        .success(function(data, status, headers){
+          $scope.safeApply($location.path('/hosts/' + data.name));  
+        })
+      } else{
+        $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
+      }
     }
 
 
-
-/*start of dat shit*/
-/*$scope.$on("$routeChangeStart",function(next,current){
-  var params = {}, queryString = $location.path().substring(1), regex = /([^&=]+)=([^&]*)/g, m;
-  while (m = regex.exec(queryString)) {
-    params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-  }
-  if(params && params.access_token && params.expires_in){
-    $scope.accessToken = params.access_token;
-    $window.sessionStorage.accessToken = params.access_token;
-    $window.sessionStorage.expiresAt = new Date(new Date().getTime() + params.expires_in * 1000).getTime();
-  }
-  if($window.sessionStorage.accessToken && $window.sessionStorage.expiresAt
-    && ($window.sessionStorage.expiresAt > new Date().getTime())){
-      //SEND REQUEST FOR USER INFORMATION HERE
-  }else{
-    var oauth2 = {
-      url: "https://accounts.google.com/o/oauth2/auth",
-      client_id: "{CLIENT_ID}",
-      response_type: "token",
-      redirect_uri: "localhost:3000",
-      scope: "{APIs_YOU_WANT_TO_AUTHORIZE}",
-      state: "initial"
+    $scope.safeApply = function(fn) {
+      var phase = this.$root.$$phase;
+      if(phase == '$apply' || phase == '$digest')
+        this.$eval(fn);
+      else
+        this.$apply(fn);
     };
-    $window.open(oauth2.url + "?client_id=" +
-        oauth2.client_id + "&response_type=" +
-        oauth2.response_type + "&redirect_uri=" +
-        oauth2.redirect_uri + "&scope=" +
-        oauth2.scope + "&state=" +
-        oauth2.state
-        ,"_self");
-
-});*/
-
-
-
-/*end of dat shit*/
-
-
+    
+    
   }])
 
+          //$http({method: "GET", url: 'http://localhost:3000/channel', headers: {"Authorization": "Bearer " + auth.getToken()}}).success(function(data, status, headers){
   .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', 'youTubeHandler', function($scope, $http, ytp, np, yth){
     $scope.yth = yth;
     $scope.ytp = ytp;
     $scope.playlist = true;
     $scope.q;
     $scope.songs = np.getSongs();
-    $scope.startItUp = ytp.loadScripts;
+    ytp.loadScripts();
 
     $scope.addSearchedSong = function(index){
       $scope.songs.push($scope.search[index]);
@@ -109,25 +104,20 @@ angular.module('myApp.controllers', []).
     }
   }])
 
-  .controller('PlayerController', ['$scope', 'youTubePlayer', '$http', function($scope, ytp, $http){
+  .controller('PlayerController', ['$scope', '$http', '$route', function($scope, $http, $route){
+    $scope.channelName = $route.current.params.name;
     $scope.play = function(){
-      $http.post('/player', {action: 'play'})
+      $http.post('http://localhost:3000/player', {action: 'play', channel: $scope.channelName})
       .success(function(){
 
       })
       .error(function(){
         alert('erroed');
       })
-/*      var state = ytp.player.getPlayerState();
-      if(state == 2){
-        ytp.player.playVideo();
-      } else if(state == -1 || state == 0){
-        ytp.ended();
-      }*/
     }
 
     $scope.pause = function(){
-      $http.post('/player', {action: "pause"})
+      $http.post('/player', {action: "pause", channel: $scope.channelName})
       .success(function(data, status, headers){
 
       })
@@ -136,7 +126,7 @@ angular.module('myApp.controllers', []).
       })
     }
     $scope.next = function(){
-      $http.post('/player', {action: "next"})
+      $http.post('/player', {action: "next", channel: $scope.channelName})
       .success(function(){
 
       })
@@ -146,8 +136,31 @@ angular.module('myApp.controllers', []).
 
     }
   }])
-  .controller('HostController', ['socket', function(socket){
-    socket.connect();
+  .controller('HostController', ['$scope', 'socket', '$rootScope', function($scope, socket, $rootScope){
+
+    $scope.connect = function(){
+        socket.connect();
+    }
+
+    $scope.socketOnline = function(){
+      return socket.getStatus();
+    }
+
+    $scope.disconnect = function(){
+      $scope.safeApply(function(){
+        socket.disconnect();
+      });
+      console.log('disconnected');
+    }
+
+    $scope.safeApply = function(fn) {
+      var phase = this.$root.$$phase;
+      if(phase == '$apply' || phase == '$digest')
+        this.$eval(fn);
+      else
+        this.$apply(fn);
+    };
+
   }])
   .controller('ChannelsController', [function(){
     

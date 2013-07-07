@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('myApp.services', [])
+angular.module('myApp.services', ['ngResource'])
   .factory('youTubeHandler', ['$http', function($http){
   	var songs = [];
   	var yth = {};
@@ -56,7 +56,7 @@ angular.module('myApp.services', [])
       var tag = document.createElement('script');
       tag.src = "https://www.youtube.com/player_api";
       var firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);      
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
 
     ytp.getState = function(){
@@ -160,23 +160,50 @@ angular.module('myApp.services', [])
 
     return np;
   }])
-  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", function(np, ytp, auth){
+  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', function(np, ytp, auth, $route, $rootScope){
       var socketHandler = {};
       var socket;
+      var status = false;
+      socketHandler.getStatus = function(){
+        //true if connect, false otherwise
+        return status;
+      }
+
+      socketHandler.disconnect = function(){
+        socket.emit("dc");
+        status = false;
+      }
       socketHandler.connect = function(){
         //this is where the oauth magic happenz
         //needs to be ssl also i guess...
         //cuz we got access token in get params lulz
-        if(auth.getToken() != null){
-          console.log('first one');
-          socket = io.connect('http://localhost:3000', {query: "auth=" + auth.getToken() + "&provider=goog" + "&name=" + auth.getChannelName()});
-        } else{
-          socket = io.connect('http://localhost:3000', {query: "name=" + auth.getChannelName()});
-        }
+        if(socket){
+          socket.socket.reconnect();
+          status = true;
 
+        } else {
+          if(auth.getToken() != null){
+            console.log('first one');
+            socket = io.connect('http://localhost:3000', {query: "auth=" + auth.getToken()});
+
+          } else{
+            socket = io.connect('http://localhost:3000', {query: "name=" + $route.current.params.name});
+          }
+          attachListeners();
+        }
+      }
+
+      function attachListeners(){
         socket.on('song:add', function(data){
           np.push(data.id);
           console.log("Got data id: " + data.id);
+        })
+
+        socket.on('connect', function(){
+          console.log('connected');
+          $rootScope.$apply(function(){
+            status = true;
+          });
         })
 
         socket.on('news', function(data){
@@ -201,12 +228,31 @@ angular.module('myApp.services', [])
 
       return socketHandler;
   }])
-  .factory('auth', [function(){
+  .factory('auth', ['$q', '$rootScope', function($q, $rootScope){
+    var config = {};
     var auth = {};
-    var access_token = "ya29.AHES6ZTvLXkZm4SJJLZAtyeVOURzBosX78mf7p1i3cA1JWJq";
-    var provider;// = "goog";
-    var channelName;
+    var access_token;
+    var popup = window;
+    var channelName = "";
 
+    config.client_id = "730381482631.apps.googleusercontent.com";
+    config.response_type = "token"
+    config.redirect_uri = "http://localhost:3000/app/login.html";
+
+    auth.getGoogleProvider = function(){
+      var authEndpointHost = "https://accounts.google.com/o/oauth2/auth";
+      var authEndpointURL = authEndpointHost + "?";
+      for(var prop in config){
+        authEndpointURL += "&" + prop + "=" + config[prop];
+      }
+      authEndpointURL += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"; 
+      popup.open(authEndpointURL);
+      return listenForMessage(popup);
+    }
+
+    auth.getTokenFromProvider = function(){
+      //var popup = window.open()
+    }
     auth.getToken = function(){
       return access_token;
     }
@@ -233,7 +279,6 @@ angular.module('myApp.services', [])
     auth.getOAuthParams = function(){
       var oauthParams = {};
       // parse the query string
-      // from http://oauthssodemo.appspot.com/step/2
       var params = {}, queryString = location.hash.substring(1),
         regex = /([^&=]+)=([^&]*)/g, m;
       while (m = regex.exec(queryString)) {
@@ -242,5 +287,35 @@ angular.module('myApp.services', [])
       return oauthParams
     }
 
+    function listenForMessage(popup){
+      var deferred = $q.defer();
+
+      angular.element(popup).bind('message', function(ev){
+        if(ev.origin === "http://localhost:3000"){
+          auth.setToken(ev.data.access_token);
+          deferred.resolve(ev.data);
+          $rootScope.$apply();
+          angular.element(popup).unbind('message');
+        }
+      })
+      return deferred.promise;
+    } 
+
     return auth;
+  }])
+  .factory('Channel', ['$resource', function($resource){
+    var ChannelResource = $resource('/channels/:channelId', {}, {
+      'query': {method: 'GET', isArray: false},
+      'get': {method: 'GET'}
+    })
+
+    return ChannelResource;
+  }])
+  .factory('User', ['$resource', 'auth', function($resource, auth){
+    var UserResource = $resource('/users/:userId', {}, {
+      'query': {method: 'GET', isArray: false},
+      'get': {method: 'GET', headers: {"Authorization": "Bearer " + auth.getToken()}}
+    })
+
+    return UserResource;
   }])
