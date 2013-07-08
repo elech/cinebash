@@ -29,7 +29,7 @@ angular.module('myApp.controllers', []).
 
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
-    $scope.available = false;
+   auth.getToken() != null ? $scope.available = true : $scope.available = false;
     $scope.startChannelName = "";
     //TODO turn this shit off when it first loads
     $scope.$watch('startChannelName', function(){

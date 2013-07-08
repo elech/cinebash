@@ -14,10 +14,10 @@ style="float:left;"
 ng-controller="StartChannelController">
 	<h2><span class="blueText">&rang;&rang;</span> Start a channel</h2>
 	<p>Select a channel name to start hosting</p>
-	<form name="startChannel"> 
 	<div class="alert alert-success" ng-show="available">
 		Available!
 	</div>
+	<form name="startChannel"> 
 		<input id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-show="auth.getToken() == null">
 		<button id="startChannel" class="btn btn-info" ng-click="	startChannel()" ng-disabled="!available">Start</button>
 	</form>
