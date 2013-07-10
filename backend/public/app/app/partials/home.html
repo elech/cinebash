@@ -19,6 +19,6 @@ ng-controller="StartChannelController">
 	</div>
 	<form name="startChannel"> 
 		<input id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-show="auth.getToken() == null">
-		<button id="startChannel" class="btn btn-info" ng-click="	startChannel()" ng-disabled="!available">Start</button>
+		<button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()">Start</button>
 	</form>
 </div>

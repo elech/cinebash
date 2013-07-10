@@ -29,12 +29,12 @@ angular.module('myApp.controllers', []).
 
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
-   auth.getToken() != null ? $scope.available = true : $scope.available = false;
+   //auth.getToken() != null ? $scope.available = true : $scope.available = false;
     $scope.startChannelName = "";
     //TODO turn this shit off when it first loads
-    $scope.$watch('startChannelName', function(){
+/*    $scope.$watch('startChannelName', function(){
       $scope.searchChannel();
-    })
+    })*/
 
     $scope.searchChannel = function(){
       ChannelResource.get({channelId: $scope.startChannelName},
@@ -49,15 +49,17 @@ angular.module('myApp.controllers', []).
         }
       });
     }
-
-    $scope.startChannel = function(){
-      if(auth.getToken() != null){
+    
+    $scope.startHostingChannel = function(){
+      console.log(auth.getToken());
+      if(auth.getToken()){
         $http({method: "GET", url: "http://localhost:3000/channel", headers: {"Authorization": "Bearer " + auth.getToken()}})
         .success(function(data, status, headers){
           $scope.safeApply($location.path('/hosts/' + data.name));  
         })
       } else{
-        $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
+       console.log('elsed');
+       $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
       }
     }
 
