@@ -1,6 +1,6 @@
 var express = require('express'),
 	app = express(),
-	fs = require('fs'),
+	fs = require('fs');
 
 var server = require('http').createServer(app);
 var io = require('./sockets.js')(server);

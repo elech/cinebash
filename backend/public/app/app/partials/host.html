@@ -31,9 +31,8 @@
 		</div>
 		<div class="span9">
 			<div ng-show="socketOnline()"><h1>ONLINE</h1></div>
-	<div ng-show="!socketOnline()" class="alert alert-error"><h1>OFFLINE</h1></div>
-			<button ng-click="startItUp()" class="btn btn-info">start it up</button>
-
+			<div ng-show="!socketOnline()" class="alert alert-error"><h1>OFFLINE</h1></div>
+			<!-- <button ng-click="startItUp()" class="btn btn-info">start it up</button> -->
 			<div id="ytplayer"></div>
 		</div>
 	</div>

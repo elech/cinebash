@@ -1,35 +1,6 @@
 'use strict';
 
 angular.module('myApp.services', ['ngResource'])
-  .factory('youTubeHandler', ['$http', function($http){
-  	var songs = [];
-  	var yth = {};
-
-  	yth.getSongs = function(){
-  		return songs;
-  	}
-
-  	yth.setSongs = function(items){
-  		songs = items
-  	}
-
-  	yth.pop = function(){
-  		return songs.shift();
-  	}
-
-  	yth.search = function(q){
-        return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK")
-    }
-
-    yth.push = function(){
-    	if('object' === typeof arguments[0]){
-
-    	} else if('string' === typeof arguments[0]){
-
-    	}
-    }
-  	return yth;
-  }])
   .factory('youTubeSong', ['$http', function($http){
   	var Song = {};
     
@@ -40,6 +11,10 @@ angular.module('myApp.services', ['ngResource'])
         throw new Error('No id');
       }
   	}
+
+    Song.search = function(q){
+        return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK")
+    }
 
     Song.parseYTData = function(data){
       this.title = data.entry.title.$t;
@@ -173,7 +148,7 @@ angular.module('myApp.services', ['ngResource'])
 
     return np;
   }])
-  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', function(np, ytp, auth, $route, $rootScope){
+  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', '$location', function(np, ytp, auth, $route, $rootScope, $location){
       var socketHandler = {};
       var socket;
       var status = false;
@@ -207,6 +182,17 @@ angular.module('myApp.services', ['ngResource'])
       }
 
       function attachListeners(){
+        socket.on('connect_failed', function(data){
+          console.log('Connect failed');
+          console.log(data);
+        })
+
+        socket.on('error', function(data){
+          $rootScope.$apply(function(){
+            $location.path('/');
+          })
+        })
+
         socket.on('songs:create', function(data){
           np.push(data.id);
           console.log("Got data id: " + data.id);
@@ -344,4 +330,10 @@ angular.module('myApp.services', ['ngResource'])
     })
 
     return UserResource;
+  }])
+  .factory('Song', ['$resource', function($resource){
+    var SongResource = $resource('/channels/:name/songs', {}, {
+      'query': {method: 'GET', isArray: true}
+    })
+    return SongResource;
   }])

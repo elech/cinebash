@@ -1,5 +1,6 @@
 module.exports = function(app, io){
 	var songs = require('./controllers/songs.js')(io);
+	var channels = require('./controllers/channels.js')(io);
 	function channelExists(req, res, next){
 		if(io.sockets.clients(req.params.name).length > 0){
 			next();
@@ -21,4 +22,9 @@ module.exports = function(app, io){
 		io.sockets.in(req.body.channel).emit('action:' + req.body.action, {});
 		res.send(200);
 	})
+
+	/*
+		Channels
+	*/
+	app.get('/channels', channels.list);
 }

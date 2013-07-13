@@ -2,10 +2,10 @@
 	<h2><span class="blueText">&rang;&rang;</span> Join a channel</h2>
 	<p>Type the name of the channel you wish to join</p>
 	<input id="query" name="query" ng-model="q">
-	<button id="search" class="btn btn-info" ng-click="searchChannels()">Search</button>
+	<button id="search" class="btn btn-info" ng-click="searchForChannels()">Search</button>
 	<ul style="list-style-type:square;list-style-color:#ccc">
 		<li ng-repeat="channel in channels" ng-click="joinChannel($index)" style="color:#FFFFFF">
-			{{channel.name}}
+			{{channel.substring(1)}}
 		</li>
 	</ul>
 </div>
@@ -18,7 +18,7 @@ ng-controller="StartChannelController">
 		Available!
 	</div>
 	<form name="startChannel"> 
-		<input id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-show="auth.getToken() == null">
-		<button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()">Start</button>
+		<input id="startChannelName" name="startChannelName" ng-model="startChannelName">
+		<button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()" ng-disabled="!available">Start</button>
 	</form>
 </div>

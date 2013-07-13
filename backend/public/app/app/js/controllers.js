@@ -3,11 +3,9 @@
 /* Controllers */
 
 angular.module('myApp.controllers', []).
-  controller('HomeController', ['$scope', '$http', '$location', 'auth', 'Channel', 'User', function($scope, $http, $location, auth, ChannelResource, UserResource) {
+  controller('HomeController', ['$scope','$location','Channel', function($scope,$location, ChannelResource) {
     $scope.channels;
     $scope.q;
-    $scope.dub;
-    $scope.auth = auth;
     $scope.safeApply = function(fn) {
       var phase = this.$root.$$phase;
       if(phase == '$apply' || phase == '$digest')
@@ -17,40 +15,38 @@ angular.module('myApp.controllers', []).
       };
 
     $scope.joinChannel = function(index){
-      $scope.safeApply($location.path('/channels/'+ $scope.channels[index].name));
+      $scope.safeApply($location.path('/channels/'+ $scope.channels[index].substring(1)));
     }
 
-    $scope.searchChannels = function(){
-      ChannelResource.query({name: $scope.q}, function(data, status, headers){
+    $scope.searchForChannels = function(){
+      ChannelResource.query({name: $scope.q},
+      function(data, status, headers){
+        console.log(data);
         $scope.channels = data.channels;
+      },
+      function(){
+        console.log('derp');
       })
     }
 
-
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
-   //auth.getToken() != null ? $scope.available = true : $scope.available = false;
+    $scope.available = false;
     $scope.startChannelName = "";
-    //TODO turn this shit off when it first loads
-/*    $scope.$watch('startChannelName', function(){
-      $scope.searchChannel();
-    })*/
-
-    $scope.searchChannel = function(){
-      ChannelResource.get({channelId: $scope.startChannelName},
-        function(data, status, headers){
-          $scope.available = false;
-        },
+    $scope.$watch('startChannelName', function(){
+      ChannelResource.query({name: $scope.startChannelName},
         function(data){
-        if(data.status == 404){
-          //Channel by the search name not found
-          $scope.available = true;
-          auth.setChannelName($scope.startChannelName);
-        }
-      });
-    }
-    
-    $scope.startHostingChannel = function(){{
+          if(data.channels.indexOf("/" + $scope.startChannelName) === -1 && $scope.startChannelName !== ""){
+            $scope.available = true;
+          } else{
+            $scope.available = false;
+          }  
+        }, function(){
+          //something
+        })
+    })
+
+    $scope.startHostingChannel = function(){
       $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
     }
 
@@ -64,21 +60,26 @@ angular.module('myApp.controllers', []).
     };
     
   }])
-  .controller('MissionController',[ '$scope', '$http', 'youTubePlayer', 'nowPlayingList', 'youTubeHandler', function($scope, $http, ytp, np, yth){
-    $scope.yth = yth;
-    $scope.ytp = ytp;
+  .controller('MissionController',[ '$scope', '$http', 'nowPlayingList', 'Song', '$route', 'youTubePlayer', function($scope, $http, np, SongResource, $route, ytp){
     $scope.playlist = true;
     $scope.q;
-    $scope.songs = np.getSongs();
+    //$scope.songs = np.getSongs();
     ytp.loadScripts();
 
-    $scope.addSearchedSong = function(index){
-      $scope.songs.push($scope.search[index]);
-      $scope.search = null;
-      $scope.playlist = true;
+    $scope.refresh = function(){
+      SongResource.query({name: $route.current.params.name},
+        function(data){
+          np.setSongs(data);
+        },
+        function(){
+          console.log('error');
+        })
     }
-  }])
 
+    $scope.$watch(function(){ return np.getSongs()}, function(newSongs, OldSongs){
+      $scope.songs = newSongs;
+    })
+  }])
   .controller('PlayerController', ['$scope', '$http', '$route', 'nowPlayingList', '$timeout', function($scope, $http, $route, np, $timeout){
     $scope.channelName = $route.current.params.name;
     $scope.play = function(){
@@ -143,11 +144,5 @@ angular.module('myApp.controllers', []).
       else
         this.$apply(fn);
     };
-
-  }])
-  .controller('ChannelsController', [function(){
-    
-  }])
-  .controller('LoginController', ['auth', '$location', function(auth, $location){
 
   }])

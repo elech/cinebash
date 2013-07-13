@@ -7,7 +7,6 @@ var myApp = angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.d
     $routeProvider.when('/', {templateUrl: 'partials/home.html', controller: 'HomeController' }),
     $routeProvider.when('/channels/:name', {templateUrl: 'partials/channels.html', controller: 'MissionController'}),
     $routeProvider.when('/hosts/:name', {templateUrl: 'partials/host.html', controller: 'HostController'}),
-    //$routeProvider.when('', {templateUrl: 'partials/login.html', controller: 'LoginController'}),
     $routeProvider.otherwise({redirectTo: '/'})
   }])
   .run(['$window', 'auth', function($window, auth){
