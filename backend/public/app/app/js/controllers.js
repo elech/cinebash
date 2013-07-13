@@ -50,17 +50,8 @@ angular.module('myApp.controllers', []).
       });
     }
     
-    $scope.startHostingChannel = function(){
-      console.log(auth.getToken());
-      if(auth.getToken()){
-        $http({method: "GET", url: "http://localhost:3000/channel", headers: {"Authorization": "Bearer " + auth.getToken()}})
-        .success(function(data, status, headers){
-          $scope.safeApply($location.path('/hosts/' + data.name));  
-        })
-      } else{
-       console.log('elsed');
-       $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
-      }
+    $scope.startHostingChannel = function(){{
+      $scope.safeApply($location.path('/hosts/' + $scope.startChannelName));
     }
 
 
@@ -91,7 +82,7 @@ angular.module('myApp.controllers', []).
   .controller('PlayerController', ['$scope', '$http', '$route', 'nowPlayingList', '$timeout', function($scope, $http, $route, np, $timeout){
     $scope.channelName = $route.current.params.name;
     $scope.play = function(){
-      $http.post('http://localhost:3000/channels/' + $scope.channelName + '/player', {action: 'play', channel: $scope.channelName})
+      $http.post('/channels/' + $scope.channelName + '/actions', {action: 'play', channel: $scope.channelName})
       .success(function(){
 
       })
@@ -101,7 +92,7 @@ angular.module('myApp.controllers', []).
     }
 
     $scope.pause = function(){
-      $http.post('/channels/' + $scope.channelName + '/player', {action: "pause", channel: $scope.channelName})
+      $http.post('/channels/' + $scope.channelName + '/actions', {action: "pause", channel: $scope.channelName})
       .success(function(data, status, headers){
 
       })
@@ -110,7 +101,7 @@ angular.module('myApp.controllers', []).
       })
     }
     $scope.next = function(){
-      $http.post('/channels/' + $scope.channelName + '/player', {action: "next", channel: $scope.channelName})
+      $http.post('/channels/' + $scope.channelName + '/actions', {action: "next", channel: $scope.channelName})
       .success(function(){
 
       })

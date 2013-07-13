@@ -152,6 +152,17 @@ angular.module('myApp.services', ['ngResource'])
       });
     }
 
+    np.remove = function(hash){
+      np.safeApply(function(){
+        songs.forEach(function(song, ndx){
+            console.log(song);
+          if(song.$$hashKey === hash){
+            songs.splice(ndx, 1);
+          }
+        })
+      })
+    }
+
     np.safeApply = function(fn) {
       var phase = $rootScope.$$phase;
       if(phase == '$apply' || phase == '$digest')
@@ -196,7 +207,7 @@ angular.module('myApp.services', ['ngResource'])
       }
 
       function attachListeners(){
-        socket.on('song:add', function(data){
+        socket.on('songs:create', function(data){
           np.push(data.id);
           console.log("Got data id: " + data.id);
         })
@@ -212,23 +223,27 @@ angular.module('myApp.services', ['ngResource'])
           console.log(data.hello);
         })
 
-        socket.on('player:play', function(){
+        socket.on('action:play', function(){
           console.log('he bout to play')
           ytp.play();
         })
 
-        socket.on('player:pause', function(){
+        socket.on('action:pause', function(){
           console.log('he bout to puase')
           ytp.pause();
         })
 
-        socket.on('player:next', function(){
+        socket.on('action:next', function(){
           console.log('player bout to next');
           ytp.next();
         })
 
-        socket.on('playlist:get', function(){
-          socket.emit('playlist:send', np.getSongs());
+        socket.on('songs:list', function(){
+          socket.emit('songs:send', np.getSongs());
+        })
+
+        socket.on('songs:del', function(data){
+          np.remove(data.hash);
         })
       }
 
