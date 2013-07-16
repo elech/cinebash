@@ -85,7 +85,7 @@ angular.module('myApp.controllers', []).
     $scope.play = function(){
       $http.post('/channels/' + $scope.channelName + '/actions', {action: 'play', channel: $scope.channelName})
       .success(function(){
-
+        
       })
       .error(function(){
         alert('erroed');

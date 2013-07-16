@@ -104,7 +104,7 @@ angular.module('myApp.directives', [])
           $scope.songs = newSongs;
         })
       },
-      template: '<div id="playlistContainer"><ul><li ng-repeat="song in songs"><song song="song"></song></li></ul></div>',
+      template: '<div id="playlistContainer"><ul style="list-style:none;"><li ng-repeat="song in songs"><song song="song"></song></li></ul></div>',
       link: function($scope, elem, attr){
 
       } 
