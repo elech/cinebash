@@ -6,20 +6,35 @@ angular.module('myApp.services', ['ngResource'])
     
     Song.getYTData = function() {
   		if(this.id != undefined){
-        return $http.get("https://gdata.youtube.com/feeds/api/videos/" + this.id +"?v=2&alt=json")
+        return $http.get("https://gdata.youtube.com/feeds/api/videos/" + this.id +"?v=2&alt=json");
       } else {
         throw new Error('No id');
       }
   	}
 
     Song.search = function(q){
-        return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK")
+      return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK");
+    }
+
+    Song.parseSearch = function(data){
+      var searchedSongs = data.data.items, newSongs = [], tempSong;
+      for(var song in searchedSongs){
+        tempSong = {};
+        //Song.parseYTData.call(tempSong,searchedSongs)      
+/*        tempSong.title = searchedSongs[song].title;
+        tempSong.id = searchedSongs[song].id;
+        tempSong.description = searchedSongs[song].description;
+        tempSong.img = searchedSongs[song].thumbnail.hqDefault;*/
+        newSongs.push(tempSong);
+      }
+      return newSongs;
     }
 
     Song.parseYTData = function(data){
       this.title = data.entry.title.$t;
       this.id = data.entry.media$group.yt$videoid.$t;
       this.description = data.entry.media$group.media$description.$t;
+      this.img = data.entry.media$group.media$thumbnail[0].url;
     }
 
   	return Song;
@@ -82,17 +97,17 @@ angular.module('myApp.services', ['ngResource'])
 
     ytp.safeApply = function(fn){
       var phase = $rootScope.$$phase;
-      if(phase == '$apply' || phase == '$digest')
+      if(phase == '$apply' || phase == '$digest'){
         $rootScope.$eval(fn);
-      else
+      } else{
         $rootScope.$apply(fn);
+      }
     }
 
     ytp.ended = function(){
       console.log("Inside ended " + "np songs length " + np.getSongs().length);
       if(np.getSongs().length > 0){
         ytp.safeApply(ytp.player.loadVideoById(np.pop().id, 0, "large"));
-
       }
     }
 
@@ -121,6 +136,7 @@ angular.module('myApp.services', ['ngResource'])
       song.id = id;
       np.safeApply(function(){
         song.getYTData().success(function(data, status, headers){
+              console.log(data);
               song.parseYTData(data)
               np.getSongs().push(song);
         });
@@ -130,7 +146,6 @@ angular.module('myApp.services', ['ngResource'])
     np.remove = function(hash){
       np.safeApply(function(){
         songs.forEach(function(song, ndx){
-            console.log(song);
           if(song.$$hashKey === hash){
             songs.splice(ndx, 1);
           }

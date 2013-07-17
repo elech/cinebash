@@ -22,16 +22,16 @@ angular.module('myApp.directives', [])
         $scope.q;
         $scope.search = function(){
           yts.search($scope.q).success(function(data, status, headers){
-            $scope.searchSongs = data.data.items;
+            $scope.searchSongs = yts.parseSearch(data);
           });
         }        
       },
-      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">saerch</button><ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\">{{$index + 1}}<h4>{{song.title}}</h4><p>{{song.id}}</p></li></ul>",
+      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">saerch</button><ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\">{{$index + 1}}<song song=\"song\"></song></li></ul>",
       link: function($scope, element, attr){
         $scope.searchSongs = [];
         
         $scope.clickfn = function(ndx){
-          $scope.songs.push({title : $scope.searchSongs[ndx].title, id : $scope.searchSongs[ndx].id});
+          $scope.songs.push(Object.create($scope.searchSongs[ndx]));
           $scope.playlist = true;
           $scope.q = "";
           $scope.searchSongs.length = 0;
@@ -47,7 +47,7 @@ angular.module('myApp.directives', [])
         $scope.q;
         $scope.search = function(){
           yts.search($scope.q).success(function(data, status, headers){
-            $scope.searchSongs = data.data.items;
+            $scope.searchSongs = yts.parseSearch(data);
           });
         }        
       },
@@ -103,6 +103,7 @@ angular.module('myApp.directives', [])
         $scope.$watch(function(){ return np.getSongs()}, function(newSongs, OldSongs){
           $scope.songs = newSongs;
         })
+        
       },
       template: '<div id="playlistContainer"><ul style="list-style:none;"><li ng-repeat="song in songs"><song song="song"></song></li></ul></div>',
       link: function($scope, elem, attr){

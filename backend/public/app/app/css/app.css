@@ -46,8 +46,25 @@ button{
   color:#3D9797;
 }
 
+ul{
+  list-style: none;
+  margin:0;
+}
 /*
 background: #3D9797;
 button : #3E6868;
 button : #3D9797;
 */
+
+/* song */
+.songImageContainer{
+  float:left;
+}
+
+.songDetailsContainer{
+  float:left;
+}
+
+.songContainer{
+  height:120px;
+}
