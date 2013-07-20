@@ -20,11 +20,10 @@ angular.module('myApp.services', ['ngResource'])
       var searchedSongs = data.data.items, newSongs = [], tempSong;
       for(var song in searchedSongs){
         tempSong = {};
-        //Song.parseYTData.call(tempSong,searchedSongs)      
-/*        tempSong.title = searchedSongs[song].title;
+        tempSong.title = searchedSongs[song].title;
         tempSong.id = searchedSongs[song].id;
         tempSong.description = searchedSongs[song].description;
-        tempSong.img = searchedSongs[song].thumbnail.hqDefault;*/
+        tempSong.img = searchedSongs[song].thumbnail.hqDefault;
         newSongs.push(tempSong);
       }
       return newSongs;
@@ -85,7 +84,7 @@ angular.module('myApp.services', ['ngResource'])
     }
 
     ytp.onYouTubePlayerReady = function(){
-      ytp.ended();
+      //ytp.ended();
     }
 
     ytp.onStateChange = function(state){
@@ -115,7 +114,18 @@ angular.module('myApp.services', ['ngResource'])
   }])
   .factory('nowPlayingList', ['youTubeSong', '$rootScope', function(yts, $rootScope){
     var np = {};
-    var songs = [];
+    var songs = [{
+      id: 'S8gfqs1-NuE',
+      title: 'Meek Mill -Dreams And Nightmares (Intro)',
+      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
+      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
+    },{
+      id: 'S8gfqs1-NuE',
+      title: 'Meek Mill -Dreams And Nightmares (Intro)',
+      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
+      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
+    }
+    ];
     
     np.getSongs = function(){
       return songs;

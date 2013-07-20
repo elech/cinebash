@@ -6,8 +6,9 @@ angular.module('myApp.directives', [])
       restrict: 'E',
       controller: function(){
       },
-      template: "<div class='playlistContainer'><ul><li ng-repeat=\"song in songs\" style=\"height:100px\"><song song=\"song\"></song></li></ul>",
+      template: "<div class='playlistContainer'><ul><li ng-class-even=\"'songContainerEven'\" ng-class-odd=\"'songContainerOdd'\" ng-repeat=\"song in songs\"><song song=\"song\"></song></li></ul>",
       link: function(scope, elems, attr){
+
       }
     }
   }])
@@ -26,11 +27,12 @@ angular.module('myApp.directives', [])
           });
         }        
       },
-      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">saerch</button><ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\">{{$index + 1}}<song song=\"song\"></song></li></ul>",
+      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">Search</button><ul><li ng-class-even=\"'songContainerEven'\" ng-class-odd=\"'songContainerOdd'\" ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\"><song song=\"song\"></song></li></ul>",
       link: function($scope, element, attr){
         $scope.searchSongs = [];
         
         $scope.clickfn = function(ndx){
+          console.log($scope.searchSongs[ndx]);
           $scope.songs.push(Object.create($scope.searchSongs[ndx]));
           $scope.playlist = true;
           $scope.q = "";

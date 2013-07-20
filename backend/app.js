@@ -6,7 +6,7 @@ var server = require('http').createServer(app);
 var io = require('./sockets.js')(server);
 
 app.use(express.bodyParser());
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(__dirname + '/public/app'))
 require('./routes.js')(app, io);
 
 
