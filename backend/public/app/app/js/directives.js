@@ -12,7 +12,7 @@ angular.module('myApp.directives', [])
       }
     }
   }])
-  .directive('searchlist', ['$http', 'youTubeSong', 'nowPlayingList', function($http, yts, np){
+  .directive('searchlist', ['$http', 'youTubeSong', 'nowPlayingList', '$route', function($http, yts, np, $route){
     return {
       restrict: 'E',
       scope:{
@@ -30,14 +30,28 @@ angular.module('myApp.directives', [])
       template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">Search</button><ul><li ng-class-even=\"'songContainerEven'\" ng-class-odd=\"'songContainerOdd'\" ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\"><song song=\"song\"></song></li></ul>",
       link: function($scope, element, attr){
         $scope.searchSongs = [];
-        
+
+
         $scope.clickfn = function(ndx){
+          $http({method: "POST", url: '/channels/' + $route.current.params.name + "/songs", data: {id: $scope.searchSongs[ndx].id}})
+          .success(function(data, status, headers){
+            $scope.playlist = true;
+            $timeout(function(){
+              $scope.refresh();
+            }, 1000);
+          })
+          .error(function(data, status, headers){
+            alert('failed' + status);
+          })
+        }
+        
+/*        $scope.clickfn = function(ndx){
           console.log($scope.searchSongs[ndx]);
-          $scope.songs.push(Object.create($scope.searchSongs[ndx]));
+          np.getSongs().push(Object.create($scope.searchSongs[ndx]));
           $scope.playlist = true;
           $scope.q = "";
           $scope.searchSongs.length = 0;
-        }
+        }*/
       }
     }
   }])

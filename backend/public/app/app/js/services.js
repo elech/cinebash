@@ -34,6 +34,7 @@ angular.module('myApp.services', ['ngResource'])
       this.id = data.entry.media$group.yt$videoid.$t;
       this.description = data.entry.media$group.media$description.$t;
       this.img = data.entry.media$group.media$thumbnail[0].url;
+      console.log(this);
     }
 
   	return Song;
@@ -146,8 +147,8 @@ angular.module('myApp.services', ['ngResource'])
       song.id = id;
       np.safeApply(function(){
         song.getYTData().success(function(data, status, headers){
-              console.log(data);
-              song.parseYTData(data)
+              //console.log(data);
+              song.parseYTData.call(song, data);
               np.getSongs().push(song);
         });
       });
