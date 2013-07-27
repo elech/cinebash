@@ -84,3 +84,8 @@ button : #3D9797;
 
 .songContainerEven{
 }
+
+/* Player */
+#ytplayerContainer{
+  width:640px;
+}

@@ -60,25 +60,36 @@ angular.module('myApp.controllers', []).
     };
     
   }])
-  .controller('MissionController',[ '$scope', '$http', 'nowPlayingList', 'Song', '$route', 'youTubePlayer', function($scope, $http, np, SongResource, $route, ytp){
+  .controller('MissionController',[ '$scope', '$http', 'nowPlayingList', 'Song', '$route', 'youTubePlayer', 'youTubeSong', '$location', function($scope, $http, np, SongResource, $route, ytp, yts, $location){
     $scope.playlist = true;
     $scope.q;
-    //$scope.songs = np.getSongs();
+    $scope.searchSongs = null;
     ytp.loadScripts();
+    $scope.songs = np.getSongs();
+    $scope.tabs = [{},{}];
 
     $scope.refresh = function(){
       SongResource.query({name: $route.current.params.name},
         function(data){
-          np.setSongs(data);
+          $scope.songs = data;
         },
         function(){
           console.log('error');
         })
     }
 
-    $scope.$watch(function(){ return np.getSongs()}, function(newSongs, OldSongs){
-      $scope.songs = newSongs;
-    })
+    $scope.search = function(){
+      yts.search($scope.q).success(function(data, status, headers){
+        $scope.searchSongs = yts.parseSearch(data);
+        $scope.tabs[1].active = true;
+      });
+    }
+
+    if($location.path().indexOf('channels') != -1){
+      $scope.refresh();
+    }
+
+
   }])
   .controller('PlayerController', ['$scope', '$http', '$route', 'nowPlayingList', '$timeout', function($scope, $http, $route, np, $timeout){
     $scope.channelName = $route.current.params.name;

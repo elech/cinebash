@@ -5,36 +5,40 @@
 			ng-controller="PlayerController">
 			<button class="btn btn-danger" ng-click="connect()">connect</button>
 			<button class="btn btn-danger" ng-click="disconnect()">disconnect</button>
-		<!-- 	<button class="btn btn-danger" ng-click="play()">Play</button>
+			<button class="btn btn-danger" ng-click="play()">Play</button>
 			<button class="btn btn-danger" ng-click="pause()">Pause</button>
-			<button class="btn btn-danger" ng-click="next()">Next</button> -->
+			<button class="btn btn-danger" ng-click="next()">Next</button>
 		</div>
 		<br>
-			<button style ="width:150px"
-			ng-click="playlist=true;"
-			ng-class="playlist ? 'btn btn-info' : 'btn btn-inverse'">
+			<button
+			ng-click="tabs[0].active=true"
+			ng-class="tabs[0].active ? 'btn btn-info' : 'btn btn-inverse'">
 				Playlist
 			</button>
-			<button class="btn btn-inverse"
-			style="width:150px"
-			ng-click="playlist=false;"
-			ng-class="!playlist ? 'btn btn-info' : 'btn btn-inverse'">
-				Search
-			</button>
-			<playlist style="width:300px"
-			ng-show="playlist">
-			</playlist>
-			<searchlist style="width:300px"
-				playlist="playlist"
-				ng-show="!playlist"
-				songs="songs">
-			</searchlist>
+			<div class="input-append">
+    			<input class="span12" type="text" name="q" ng-model="q"/>
+				<button 
+				ng-click="search()"
+				ng-class="tabs[1].active ? 'btn btn-info' : 'btn btn-inverse'">
+					Search
+				</button>
+    		</div>
+
+		<tabset>
+			<tab active="tabs[0].active">
+				<playlist></playlist>
+			</tab>
+			<tab active="tabs[1].active">
+				<searchlist></searchlist>
+			</tab>
+		</tabset>
 		</div>
 		<div class="span9">
-			<div ng-show="socketOnline()"><h1>ONLINE</h1></div>
-			<div ng-show="!socketOnline()" class="alert alert-error"><h1>OFFLINE</h1></div>
-			<!-- <button ng-click="startItUp()" class="btn btn-info">start it up</button> -->
-			<div id="ytplayer"></div>
+			<div id="ytplayerContainer">
+				<div ng-show="socketOnline()" class="alert alert-success"><h1>ONLINE</h1></div>
+				<div ng-show="!socketOnline()" class="alert alert-error"><h1>OFFLINE</h1></div>
+				<div id="ytplayer"></div>
+			</div>
 		</div>
 	</div>
 </div>
