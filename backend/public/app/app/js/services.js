@@ -1,50 +1,40 @@
 'use strict';
 
 angular.module('myApp.services', ['ngResource'])
-  .factory('youTubeHandler', ['$http', function($http){
-  	var songs = [];
-  	var yth = {};
-
-  	yth.getSongs = function(){
-  		return songs;
-  	}
-
-  	yth.setSongs = function(items){
-  		songs = items
-  	}
-
-  	yth.pop = function(){
-  		return songs.shift();
-  	}
-
-  	yth.search = function(q){
-        return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK")
-    }
-
-    yth.push = function(){
-    	if('object' === typeof arguments[0]){
-
-    	} else if('string' === typeof arguments[0]){
-
-    	}
-    }
-  	return yth;
-  }])
   .factory('youTubeSong', ['$http', function($http){
   	var Song = {};
     
     Song.getYTData = function() {
   		if(this.id != undefined){
-        return $http.get("https://gdata.youtube.com/feeds/api/videos/" + this.id +"?v=2&alt=json")
+        return $http.get("https://gdata.youtube.com/feeds/api/videos/" + this.id +"?v=2&alt=json");
       } else {
         throw new Error('No id');
       }
   	}
 
+    Song.search = function(q){
+      return $http.jsonp("https://gdata.youtube.com/feeds/api/videos?q=" + q.split(" ").join("+") + "&alt=jsonc&max-results=15&v=2&callback=JSON_CALLBACK");
+    }
+
+    Song.parseSearch = function(data){
+      var searchedSongs = data.data.items, newSongs = [], tempSong;
+      for(var song in searchedSongs){
+        tempSong = {};
+        tempSong.title = searchedSongs[song].title;
+        tempSong.id = searchedSongs[song].id;
+        tempSong.description = searchedSongs[song].description;
+        tempSong.img = searchedSongs[song].thumbnail.hqDefault;
+        newSongs.push(tempSong);
+      }
+      return newSongs;
+    }
+
     Song.parseYTData = function(data){
       this.title = data.entry.title.$t;
       this.id = data.entry.media$group.yt$videoid.$t;
       this.description = data.entry.media$group.media$description.$t;
+      this.img = data.entry.media$group.media$thumbnail[0].url;
+      console.log(this);
     }
 
   	return Song;
@@ -95,7 +85,7 @@ angular.module('myApp.services', ['ngResource'])
     }
 
     ytp.onYouTubePlayerReady = function(){
-      ytp.ended();
+      //ytp.ended();
     }
 
     ytp.onStateChange = function(state){
@@ -107,17 +97,17 @@ angular.module('myApp.services', ['ngResource'])
 
     ytp.safeApply = function(fn){
       var phase = $rootScope.$$phase;
-      if(phase == '$apply' || phase == '$digest')
+      if(phase == '$apply' || phase == '$digest'){
         $rootScope.$eval(fn);
-      else
+      } else{
         $rootScope.$apply(fn);
+      }
     }
 
     ytp.ended = function(){
       console.log("Inside ended " + "np songs length " + np.getSongs().length);
       if(np.getSongs().length > 0){
         ytp.safeApply(ytp.player.loadVideoById(np.pop().id, 0, "large"));
-
       }
     }
 
@@ -125,7 +115,18 @@ angular.module('myApp.services', ['ngResource'])
   }])
   .factory('nowPlayingList', ['youTubeSong', '$rootScope', function(yts, $rootScope){
     var np = {};
-    var songs = [];
+    var songs = [{
+      id: 'S8gfqs1-NuE',
+      title: 'Meek Mill -Dreams And Nightmares (Intro)',
+      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
+      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
+    },{
+      id: 'S8gfqs1-NuE',
+      title: 'Meek Mill -Dreams And Nightmares (Intro)',
+      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
+      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
+    }
+    ];
     
     np.getSongs = function(){
       return songs;
@@ -146,10 +147,21 @@ angular.module('myApp.services', ['ngResource'])
       song.id = id;
       np.safeApply(function(){
         song.getYTData().success(function(data, status, headers){
-              song.parseYTData(data)
+              //console.log(data);
+              song.parseYTData.call(song, data);
               np.getSongs().push(song);
         });
       });
+    }
+
+    np.remove = function(hash){
+      np.safeApply(function(){
+        songs.forEach(function(song, ndx){
+          if(song.$$hashKey === hash){
+            songs.splice(ndx, 1);
+          }
+        })
+      })
     }
 
     np.safeApply = function(fn) {
@@ -162,7 +174,7 @@ angular.module('myApp.services', ['ngResource'])
 
     return np;
   }])
-  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', function(np, ytp, auth, $route, $rootScope){
+  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', '$location', function(np, ytp, auth, $route, $rootScope, $location){
       var socketHandler = {};
       var socket;
       var status = false;
@@ -196,7 +208,18 @@ angular.module('myApp.services', ['ngResource'])
       }
 
       function attachListeners(){
-        socket.on('song:add', function(data){
+        socket.on('connect_failed', function(data){
+          console.log('Connect failed');
+          console.log(data);
+        })
+
+        socket.on('error', function(data){
+          $rootScope.$apply(function(){
+            $location.path('/');
+          })
+        })
+
+        socket.on('songs:create', function(data){
           np.push(data.id);
           console.log("Got data id: " + data.id);
         })
@@ -212,23 +235,27 @@ angular.module('myApp.services', ['ngResource'])
           console.log(data.hello);
         })
 
-        socket.on('player:play', function(){
+        socket.on('action:play', function(){
           console.log('he bout to play')
           ytp.play();
         })
 
-        socket.on('player:pause', function(){
+        socket.on('action:pause', function(){
           console.log('he bout to puase')
           ytp.pause();
         })
 
-        socket.on('player:next', function(){
+        socket.on('action:next', function(){
           console.log('player bout to next');
           ytp.next();
         })
 
-        socket.on('playlist:get', function(){
-          socket.emit('playlist:send', np.getSongs());
+        socket.on('songs:list', function(){
+          socket.emit('songs:send', np.getSongs());
+        })
+
+        socket.on('songs:del', function(data){
+          np.remove(data.hash);
         })
       }
 
@@ -329,4 +356,10 @@ angular.module('myApp.services', ['ngResource'])
     })
 
     return UserResource;
+  }])
+  .factory('Song', ['$resource', function($resource){
+    var SongResource = $resource('/channels/:name/songs', {}, {
+      'query': {method: 'GET', isArray: true}
+    })
+    return SongResource;
   }])

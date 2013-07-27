@@ -7,4 +7,10 @@ angular.module('myApp.filters', []).
     return function(text) {
       return String(text).replace(/\%VERSION\%/mg, version);
     }
+  }])
+  .filter('emptyString', [function(){
+  	return function(text){
+  		console.log(text);
+  		return text == "";
+  	}
   }]);

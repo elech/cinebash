@@ -1,29 +1,18 @@
 'use strict';
 
 angular.module('myApp.directives', [])
-  .directive('myTest', [ function(){
-	return {
-        restrict: 'A',
-        template: '<div class="mydirectiveclass"><h1>hello...</h1><p ng-repeat="obj in arr">{{obj}}</p></div>',
-        link: function (scope, elems, attr) {
-            var elly = angular.element(document.querySelector('.span10'));
-            elems.css({'background-color' : 'red', 'display' : 'block'});
-        }
-    };
-  }]).
-
-  directive('playlist', ['nowPlayingList', '$timeout', function(np, $timeout){
+  .directive('playlist', ['nowPlayingList', '$timeout', function(np, $timeout){
     return {
       restrict: 'E',
       controller: function(){
       },
-      template: "<div class='playlistContainer'><ul><li ng-repeat=\"song in songs\" style=\"height:100px\"><p>{{song.title}}</p></li></ul>",
+      template: "<div class='playlistContainer'><ul><li ng-class-even=\"'songContainerEven'\" ng-class-odd=\"'songContainerOdd'\" ng-repeat=\"song in songs\"><song song=\"song\"></song></li></ul>",
       link: function(scope, elems, attr){
+
       }
     }
   }])
-
-  .directive('searchlist', ['$http', 'youTubeHandler', 'nowPlayingList', function($http, yth, np){
+  .directive('searchlist', ['$http', 'youTubeSong', 'nowPlayingList', '$route', function($http, yts, np, $route){
     return {
       restrict: 'E',
       scope:{
@@ -33,37 +22,48 @@ angular.module('myApp.directives', [])
       controller: function($scope){
         $scope.q;
         $scope.search = function(){
-          yth.search($scope.q).success(function(data, status, headers){
-            $scope.searchSongs = data.data.items;
+          yts.search($scope.q).success(function(data, status, headers){
+            $scope.searchSongs = yts.parseSearch(data);
           });
         }        
       },
-      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">saerch</button><ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\">{{$index + 1}}<h4>{{song.title}}</h4><p>{{song.id}}</p></li></ul>",
+      template:"<input type=\"text\" name=\"q\" ng-model=\"q\"/><button class=\"btn btn-info\" ng-click=\"search()\">Search</button><ul><li ng-class-even=\"'songContainerEven'\" ng-class-odd=\"'songContainerOdd'\" ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\"><song song=\"song\"></song></li></ul>",
       link: function($scope, element, attr){
         $scope.searchSongs = [];
-        
+
+
         $scope.clickfn = function(ndx){
-          $scope.songs.push({title : $scope.searchSongs[ndx].title, id : $scope.searchSongs[ndx].id});
+          $http({method: "POST", url: '/channels/' + $route.current.params.name + "/songs", data: {id: $scope.searchSongs[ndx].id}})
+          .success(function(data, status, headers){
+            $scope.playlist = true;
+            $timeout(function(){
+              $scope.refresh();
+            }, 1000);
+          })
+          .error(function(data, status, headers){
+            alert('failed' + status);
+          })
+        }
+        
+/*        $scope.clickfn = function(ndx){
+          console.log($scope.searchSongs[ndx]);
+          np.getSongs().push(Object.create($scope.searchSongs[ndx]));
           $scope.playlist = true;
           $scope.q = "";
           $scope.searchSongs.length = 0;
-        }
+        }*/
       }
     }
   }])
   
-  .directive('mobileSearchlist', ['$http', 'youTubeHandler', 'nowPlayingList', 'auth', function($http, yth, np, auth){
+  .directive('mobileSearchlist', ['$http', 'youTubeSong', 'nowPlayingList', '$route', '$timeout', function($http, yts, np, $route, $timeout){
     return {
       restrict: 'E',
-      scope:{
-        playlist: '=',
-        songs: '='
-      },
       controller: function($scope){
         $scope.q;
         $scope.search = function(){
-          yth.search($scope.q).success(function(data, status, headers){
-            $scope.searchSongs = data.data.items;
+          yts.search($scope.q).success(function(data, status, headers){
+            $scope.searchSongs = yts.parseSearch(data);
           });
         }        
       },
@@ -72,20 +72,18 @@ angular.module('myApp.directives', [])
         $scope.searchSongs = [];
         
         $scope.clickfn = function(ndx){
-          $http({method: "POST", url: 'http://localhost:3000/songs', data: {id: $scope.searchSongs[ndx].id}, headers: {"Authorization": "Bearer " + auth.getToken()}})
+          $http({method: "POST", url: '/channels/' + $route.current.params.name + "/songs", data: {id: $scope.searchSongs[ndx].id}})
           .success(function(data, status, headers){
             $scope.playlist = true;
+            $timeout(function(){
+              $scope.refresh();
+            }, 1000);
           })
           .error(function(data, status, headers){
-            console.log(data);
-            console.log(status);
             alert('failed' + status);
           })
-/*          $scope.songs.push({title : $scope.searchSongs[ndx].title, id : $scope.searchSongs[ndx].id});
-          $scope.playlist =1 true;
-          $scope.q = "";
-          $scope.searchSongs.length = 0;*/
         }
+
       }
     }
   }])
@@ -113,34 +111,31 @@ angular.module('myApp.directives', [])
       }
   }
   }])
-  .directive('mobilePlaylist', ['nowPlayingList', '$http', function(np, $http){
+  .directive('mobilePlaylist', ['nowPlayingList', '$route', 'Song', function(np, $route, SongResource){
     return{
       restrict: 'E',
-      scope: {
-        playlist: "="
-      },
       controller: function($scope){
-        $scope.songs = np.getSongs();
 
-        $scope.$watch(function(){ return np.getSongs()}, function(songs){
-          $scope.songs = songs;
+        $scope.$watch(function(){ return np.getSongs()}, function(newSongs, OldSongs){
+          $scope.songs = newSongs;
         })
-        $scope.refresh = function(){
-          $http({method: "GET", url: "http://localhost:3000/playlists", params: {channelName: "ericsChannel2"}})
-          .success(function(data, status, headers){
-            np.setSongs(data);
-            //$scope.songs = np.getSongs();
-          })
-          .error(function(){
-            alert('errored');
-          })
-        }
-
+        
       },
-      template: '<div id="playlistContainer"><button class="btn btn-inverse" ng-click="refresh()">refresh</button><ul><li ng-repeat="song in songs">{{song.title}}</li></ul></div>',
+      template: '<div id="playlistContainer"><ul style="list-style:none;"><li ng-repeat="song in songs"><song song="song"></song></li></ul></div>',
       link: function($scope, elem, attr){
 
       } 
     }
   }])
-;
+  .directive('song', [function(){
+    return{
+      restrict: 'E',
+      scope: {
+        song: '='
+      },
+      controller: function($scope){
+
+      },
+      templateUrl: 'partials/song.html'
+    }
+  }])
