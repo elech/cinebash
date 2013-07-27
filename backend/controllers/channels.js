@@ -6,7 +6,7 @@ module.exports = function(io){
 		res.send({channels: channels.filter(likeQuery)});
 
 		function likeQuery(element, index, array){
-			return new RegExp(req.query.name).test(element) && element != "";
+			return new RegExp(req.query.name).test(element.substring(1)) && element != "";
 		}
 	}
 
