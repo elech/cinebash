@@ -1,24 +1,56 @@
-<div id="joinAChannelContainer" style="min-width:480px;float:left;`">
-	<h2><span class="blueText">&rang;&rang;</span> Join a channel</h2>
-	<p>Type the name of the channel you wish to join</p>
-	<input id="query" name="query" ng-model="q">
-	<button id="search" class="btn btn-info" ng-click="searchForChannels()">Search</button>
-	<ul style="list-style-type:square;list-style-color:#ccc">
-		<li ng-repeat="channel in channels" ng-click="joinChannel($index)" style="color:#FFFFFF">
-			{{channel.substring(1)}}
-		</li>
-	</ul>
-</div>
-<div id="startChannelContainer" class="visible-desktop" 
-style="float:left;"
-ng-controller="StartChannelController">
-	<h2><span class="blueText">&rang;&rang;</span> Start a channel</h2>
-	<p>Select a channel name to start hosting</p>
-	<div class="alert alert-success" ng-show="available">
-		Available!
+<div class="row">
+	<div class="col-12 col-md-3 col-lg-3">
+		<div id="joinAChannelContainer">
+			<h2><span class="blueText">&rang;&rang;</span> Join a channel</h2>
+			<p>Type the name of the channel you wish to join</p>
+			
+			<div class="alert alert-error" ng-show="channels.length===0">
+				No channels found!
+			</div>
+
+		    <div class="input-group">
+		      <input type="text" class="form-control" id="query" name="query" ng-model="q">
+		      <span class="input-group-btn">
+		        <button class="btn btn-primary" type="button" id="search" ng-click="searchForChannels()">Search</button>
+		      </span>
+		    </div>
+			<ul style="list-style-type:square;list-style-color:#ccc">
+				<li ng-repeat="channel in channels" ng-click="joinChannel($index)" style="color:#FFFFFF">
+					<div class="homeSearchChannelsContainer">
+						<h3><span class="blueText">&rang;&rang;</span>&nbsp;{{channel}}</h3>
+					</div>
+				</li>
+			</ul>
+		</div>
 	</div>
-	<form name="startChannel"> 
-		<input id="startChannelName" name="startChannelName" ng-model="startChannelName">
-		<button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()" ng-disabled="!available">Start</button>
-	</form>
+	<div class="col-2"></div>
+	<div class="col-mg-3 col-lg-3 hidden-sm">
+		<div id="startChannelContainer"
+		ng-controller="StartChannelController">
+			<form name="startChannel"> 
+			<h2><span class="blueText">&rang;&rang;</span> Start a channel</h2>
+			<p>Select a channel name to start hosting</p>
+			<div class="alert alert-success" ng-show="startChannel.startChannelName.$valid && available">
+				Available!
+			</div>
+			<div class="alert alert-error" ng-show="startChannel.startChannelName.$error.maxlength">
+				Too Long!
+			</div>
+			<div class="alert alert-error" ng-show="startChannel.startChannelName.$error.minlength">
+				Too Short!
+			</div>
+		    <div class="input-group">
+		      <input type="text" class="form-control" id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-pattern="/^[a-z0-9A-Z]+$/" ng-maxlength="15" ng-minlength="2" required>
+		      <span class="input-group-btn">
+		        <button class="btn btn-primary" type="button" id="startChannel" class="btn btn-info" ng-click="startHostingChannel()"  ng-disabled="!startChannel.startChannelName.$valid || !available">Go!</button>
+		<!--         {{startChannel.startChannelName.$error}}
+		      	<p>Valid: {{startChannel.startChannelName.$valid}}</p>
+		      	<p>error: {{!startChannel.startChannelName.$valid}}</p> -->
+		      </span>
+		    </div><!-- /input-group   -->
+				<!-- <button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()" ng-disabled="!available">Start</button> -->
+			</form>
+		</div>
+	</div>
+	
 </div>

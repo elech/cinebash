@@ -43,18 +43,49 @@ button{
 }
 
 .blueText{
-  color:#3D9797;
+  color:#428BCA;
 }
 
 ul{
   list-style: none;
   margin:0;
+  padding:0;
 }
 /*
 background: #3D9797;
 button : #3E6868;
 button : #3D9797;
 */
+
+/* Home page*/
+#joinAChannelContainer{
+  margin:10px;
+}
+
+#startChannelContainer{
+  margin:10px;
+}
+
+.homeSearchChannelsContainer{
+  padding:5px 5px 5px 10px;
+  border-bottom:1px solid #ccc;
+}
+
+
+/*logo*/
+#logoContainer #logoText #logoFlair{
+  color:#FFFFFF;
+  line-height: .1;
+}
+
+#logoContainer #logoText a{
+  color:#FFFFFF;
+}
+
+#logoContainer{
+  margin-left:10px;
+}
+
 
 /* song */
 .songImageContainer{
@@ -69,7 +100,7 @@ button : #3D9797;
 .songDetailsContainer{
   padding-left:5px;
   padding-top:5px;
-  width:230px;
+  max-width:50%;
   float:left;
 }
 

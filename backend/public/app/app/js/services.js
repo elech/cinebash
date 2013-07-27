@@ -60,9 +60,15 @@ angular.module('myApp.services', ['ngResource'])
     }
 
     ytp.play = function(){
-      ytp.safeApply(function(){
-        ytp.player.playVideo();
-      })
+      console.log(ytp.getState());
+      if( ytp.getState() === 2
+        || ytp.getState() === 5){
+        ytp.safeApply(function(){
+          ytp.player.playVideo();
+        })
+      } else{
+        ytp.next();
+      }
     }
 
     ytp.next = function(){
@@ -211,6 +217,14 @@ angular.module('myApp.services', ['ngResource'])
         socket.on('connect_failed', function(data){
           console.log('Connect failed');
           console.log(data);
+        })
+
+        socket.on('connect_error', function(){
+          $rootScope.$apply(function(){});
+        })
+
+        socket.on('disconnect', function(){
+          $rootScope.$apply(function(){});
         })
 
         socket.on('error', function(data){

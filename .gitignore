@@ -1,1 +1,4 @@
 node_modules/
+backend/public/app/app/lib/*
+backend/public/app/app/img/*
+backend/public/app/npm-debug.log

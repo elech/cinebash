@@ -34,14 +34,15 @@ angular.module('myApp.directives', [])
   .directive('mobileSearchlist', ['$http', 'youTubeSong', 'nowPlayingList', '$route', '$timeout', function($http, yts, np, $route, $timeout){
     return {
       restrict: 'E',
-      template:"<ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\">{{$index + 1}}<h4>{{song.title}}</h4><p>{{song.id}}</p></li></ul>",
+      template:"<ul><li ng-repeat=\"song in searchSongs\" ng-click=\"clickfn($index)\"><song song=\"song\"></song></li></ul>",
       link: function($scope, element, attr){
         
         $scope.clickfn = function(ndx){
           $http({method: "POST", url: '/channels/' + $route.current.params.name + "/songs", data: {id: $scope.searchSongs[ndx].id}})
           .success(function(data, status, headers){
             //needs a timeout during local
-            $scope.refresh();
+            console.log($scope.socketOnline);
+            $scope.refresh(5000);
             $scope.tabs[0].active = true;
           })
           .error(function(data, status, headers){
@@ -75,18 +76,6 @@ angular.module('myApp.directives', [])
         auth.getToken() == null ? $scope.isLoggedIn = false : $scope.isLoggedIn = true 
       }
   }
-  }])
-  .directive('mobilePlaylist', ['nowPlayingList', '$route', 'Song', function(np, $route, SongResource){
-    return{
-      restrict: 'E',
-      controller: function($scope){
-        //$scope.
-      },
-      template: '<div id="playlistContainer"><ul style="list-style:none;"><li ng-repeat="song in songs"><song song="song"></song></li></ul></div>',
-      link: function($scope, elem, attr){
-
-      }
-    }
   }])
   .directive('song', [function(){
     return{

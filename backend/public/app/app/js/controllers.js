@@ -15,7 +15,7 @@ angular.module('myApp.controllers', []).
       };
 
     $scope.joinChannel = function(index){
-      $scope.safeApply($location.path('/channels/'+ $scope.channels[index].substring(1)));
+      $scope.safeApply($location.path('/channels/'+ $scope.channels[index]));
     }
 
     $scope.searchForChannels = function(){
@@ -32,18 +32,21 @@ angular.module('myApp.controllers', []).
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
     $scope.available = false;
-    $scope.startChannelName = "";
+    $scope.$watch('startChannelName', function(n, o){
+      console.log('Old: ' + o + "|");
+      console.log('New: ' + n + "|");
+    })
     $scope.$watch('startChannelName', function(){
-      ChannelResource.query({name: $scope.startChannelName},
-        function(data){
-          if(data.channels.indexOf("/" + $scope.startChannelName) === -1 && $scope.startChannelName !== ""){
-            $scope.available = true;
-          } else{
-            $scope.available = false;
-          }  
-        }, function(){
-          //something
-        })
+        ChannelResource.query({name: $scope.startChannelName},
+          function(data){
+            if(data.channels.indexOf($scope.startChannelName) === -1 && $scope.startChannelName !== ""){
+              $scope.available = true;
+            } else{
+              $scope.available = false;
+            }
+          }, function(){
+            //failed
+          })
     })
 
     $scope.startHostingChannel = function(){
@@ -60,22 +63,24 @@ angular.module('myApp.controllers', []).
     };
     
   }])
-  .controller('MissionController',[ '$scope', '$http', 'nowPlayingList', 'Song', '$route', 'youTubePlayer', 'youTubeSong', '$location', function($scope, $http, np, SongResource, $route, ytp, yts, $location){
+  .controller('MissionController',[ '$scope', 'nowPlayingList', 'Song', '$route', 'youTubePlayer', 'youTubeSong', '$location', '$timeout', function($scope, np, SongResource, $route, ytp, yts, $location, $timeout){
     $scope.playlist = true;
     $scope.q;
     $scope.searchSongs = null;
-    ytp.loadScripts();
     $scope.songs = np.getSongs();
     $scope.tabs = [{},{}];
 
-    $scope.refresh = function(){
-      SongResource.query({name: $route.current.params.name},
-        function(data){
-          $scope.songs = data;
-        },
-        function(){
-          console.log('error');
-        })
+    $scope.refresh = function(timeout){
+      timeout = timeout || 0;
+      $timeout(function(){
+        SongResource.query({name: $route.current.params.name},
+          function(data){
+            $scope.songs = data;
+          },
+          function(){
+            console.log('error');
+          })
+      }, timeout);
     }
 
     $scope.search = function(){
@@ -131,8 +136,8 @@ angular.module('myApp.controllers', []).
     };
 
   }])
-  .controller('HostController', ['$scope', 'socket', '$rootScope', function($scope, socket, $rootScope){
-
+  .controller('HostController', ['$scope', 'socket', '$rootScope', 'youTubePlayer', function($scope, socket, $rootScope, ytp){
+    ytp.loadScripts();
     $scope.connect = function(){
         socket.connect();
     }
@@ -155,5 +160,7 @@ angular.module('myApp.controllers', []).
       else
         this.$apply(fn);
     };
+
+    $scope.connect();
 
   }])
