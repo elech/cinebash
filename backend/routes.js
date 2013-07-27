@@ -1,6 +1,7 @@
 module.exports = function(app, io){
 	var songs = require('./controllers/songs.js')(io);
 	var channels = require('./controllers/channels.js')(io);
+	
 	function channelExists(req, res, next){
 		if(io.sockets.clients(req.params.name).length > 0){
 			next();

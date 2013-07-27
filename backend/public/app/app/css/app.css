@@ -13,6 +13,10 @@ button{
   background:#3D9797;;
 }
 
+body{
+  background:#262626;
+}
+
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;

@@ -18,6 +18,12 @@ angular.module('myApp.controllers', []).
       $scope.safeApply($location.path('/channels/'+ $scope.channels[index]));
     }
 
+    $scope.keydown = function($event){
+      if($event.keyCode === 13){
+        $scope.searchForChannels();
+      }
+    }
+
     $scope.searchForChannels = function(){
       ChannelResource.query({name: $scope.q},
       function(data, status, headers){
@@ -25,17 +31,22 @@ angular.module('myApp.controllers', []).
         $scope.channels = data.channels;
       },
       function(){
-        console.log('derp');
+        //
       })
     }
 
   }])
   .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
     $scope.available = false;
-    $scope.$watch('startChannelName', function(n, o){
-      console.log('Old: ' + o + "|");
-      console.log('New: ' + n + "|");
-    })
+
+    $scope.keydown = function($event){
+      if($event.keyCode === 13
+        && $scope.available
+        && $scope.startChannelName){
+        $scope.startHostingChannel();
+      }
+    }
+
     $scope.$watch('startChannelName', function(){
         ChannelResource.query({name: $scope.startChannelName},
           function(data){

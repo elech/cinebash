@@ -9,7 +9,7 @@
 			</div>
 
 		    <div class="input-group">
-		      <input type="text" class="form-control" id="query" name="query" ng-model="q">
+		      <input type="text" class="form-control" id="query" name="query" ng-model="q" ng-keydown="keydown($event)">
 		      <span class="input-group-btn">
 		        <button class="btn btn-primary" type="button" id="search" ng-click="searchForChannels()">Search</button>
 		      </span>
@@ -40,7 +40,7 @@
 				Too Short!
 			</div>
 		    <div class="input-group">
-		      <input type="text" class="form-control" id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-pattern="/^[a-z0-9A-Z]+$/" ng-maxlength="15" ng-minlength="2" required>
+		      <input type="text" class="form-control" id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-pattern="/^[a-z0-9A-Z]+$/" ng-maxlength="15" ng-minlength="2" required ng-keydown="keydown($event)">
 		      <span class="input-group-btn">
 		        <button class="btn btn-primary" type="button" id="startChannel" class="btn btn-info" ng-click="startHostingChannel()"  ng-disabled="!startChannel.startChannelName.$valid || !available">Go!</button>
 		<!--         {{startChannel.startChannelName.$error}}

@@ -121,7 +121,7 @@ angular.module('myApp.services', ['ngResource'])
   }])
   .factory('nowPlayingList', ['youTubeSong', '$rootScope', function(yts, $rootScope){
     var np = {};
-    var songs = [{
+    var songs = [/*{
       id: 'S8gfqs1-NuE',
       title: 'Meek Mill -Dreams And Nightmares (Intro)',
       img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
@@ -131,7 +131,7 @@ angular.module('myApp.services', ['ngResource'])
       title: 'Meek Mill -Dreams And Nightmares (Intro)',
       img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
       description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
-    }
+    }*/
     ];
     
     np.getSongs = function(){
