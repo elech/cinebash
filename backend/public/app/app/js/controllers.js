@@ -36,7 +36,7 @@ angular.module('myApp.controllers', []).
     }
 
   }])
-  .controller("StartChannelController", ['$scope', 'auth', 'Channel', '$location', '$http', function($scope, auth, ChannelResource, $location, $http){
+  .controller("StartChannelController", ['$scope', 'Channel', '$location', '$http', function($scope, ChannelResource, $location, $http){
     $scope.available = false;
 
     $scope.keydown = function($event){
@@ -89,7 +89,7 @@ angular.module('myApp.controllers', []).
             $scope.songs = data;
           },
           function(){
-            console.log('error');
+            
           })
       }, timeout);
     }

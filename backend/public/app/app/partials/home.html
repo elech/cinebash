@@ -43,12 +43,8 @@
 		      <input type="text" class="form-control" id="startChannelName" name="startChannelName" ng-model="startChannelName" ng-pattern="/^[a-z0-9A-Z]+$/" ng-maxlength="15" ng-minlength="2" required ng-keydown="keydown($event)">
 		      <span class="input-group-btn">
 		        <button class="btn btn-primary" type="button" id="startChannel" class="btn btn-info" ng-click="startHostingChannel()"  ng-disabled="!startChannel.startChannelName.$valid || !available">Go!</button>
-		<!--         {{startChannel.startChannelName.$error}}
-		      	<p>Valid: {{startChannel.startChannelName.$valid}}</p>
-		      	<p>error: {{!startChannel.startChannelName.$valid}}</p> -->
 		      </span>
-		    </div><!-- /input-group   -->
-				<!-- <button id="startChannel" class="btn btn-info" ng-click="startHostingChannel()" ng-disabled="!available">Start</button> -->
+		    </div>
 			</form>
 		</div>
 	</div>
