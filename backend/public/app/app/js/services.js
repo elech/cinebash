@@ -121,18 +121,7 @@ angular.module('myApp.services', ['ngResource'])
   }])
   .factory('nowPlayingList', ['youTubeSong', '$rootScope', function(yts, $rootScope){
     var np = {};
-    var songs = [{
-      id: 'S8gfqs1-NuE',
-      title: 'Meek Mill -Dreams And Nightmares (Intro)',
-      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
-      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
-    },{
-      id: 'S8gfqs1-NuE',
-      title: 'Meek Mill -Dreams And Nightmares (Intro)',
-      img: 'http://i1.ytimg.com/vi/S8gfqs1-NuE/mqdefault.jpg',
-      description: 'Wales The Gifted In Stores and on iTunes Now! http://bit.ly/14OmMKA © 2013 WMG. Watch the official video for the Intro from ...'
-    }
-    ];
+    var songs = [];
     
     np.getSongs = function(){
       return songs;
@@ -153,7 +142,6 @@ angular.module('myApp.services', ['ngResource'])
       song.id = id;
       np.safeApply(function(){
         song.getYTData().success(function(data, status, headers){
-              //console.log(data);
               song.parseYTData.call(song, data);
               np.getSongs().push(song);
         });
@@ -180,7 +168,7 @@ angular.module('myApp.services', ['ngResource'])
 
     return np;
   }])
-  .factory('socket', ['nowPlayingList', "youTubePlayer", "auth", '$route', '$rootScope', '$location', function(np, ytp, auth, $route, $rootScope, $location){
+  .factory('socket', ['nowPlayingList', "youTubePlayer", '$route', '$rootScope', '$location', function(np, ytp, $route, $rootScope, $location){
       var socketHandler = {};
       var socket;
       var status = false;
@@ -194,29 +182,18 @@ angular.module('myApp.services', ['ngResource'])
         status = false;
       }
       socketHandler.connect = function(){
-        //this is where the oauth magic happenz
-        //needs to be ssl also i guess...
-        //cuz we got access token in get params lulz
         if(socket){
           socket.socket.reconnect();
           status = true;
-
         } else {
-          if(auth.getToken() != null){
-            console.log('first one');
-            socket = io.connect('http://localhost:3000', {query: "auth=" + auth.getToken()});
-
-          } else{
-            socket = io.connect('http://localhost:3000', {query: "name=" + $route.current.params.name});
-          }
+          socket = io.connect($location.host(), {query: "name=" + $route.current.params.name});
           attachListeners();
         }
       }
 
       function attachListeners(){
         socket.on('connect_failed', function(data){
-          console.log('Connect failed');
-          console.log(data);
+          //
         })
 
         socket.on('connect_error', function(){
@@ -274,86 +251,6 @@ angular.module('myApp.services', ['ngResource'])
       }
 
       return socketHandler;
-  }])
-  .factory('auth', ['$q', '$rootScope', "$window", function($q, $rootScope, $window){
-    var config = {};
-    var auth = {};
-    var access_token;
-    var popup = window;
-    var channelName = "";
-
-    config.client_id = "730381482631.apps.googleusercontent.com";
-    config.response_type = "token"
-    config.redirect_uri = "http://localhost:3000/app/login.html";
-
-    auth.getGoogleProvider = function(){
-      var authEndpointHost = "https://accounts.google.com/o/oauth2/auth";
-      var authEndpointURL = authEndpointHost + "?";
-      for(var prop in config){
-        authEndpointURL += "&" + prop + "=" + config[prop];
-      }
-      authEndpointURL += "&scope=https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"; 
-      popup.open(authEndpointURL);
-      return listenForMessage(popup);
-    }
-
-    auth.getTokenFromProvider = function(){
-      //var popup = window.open()
-    }
-    auth.getToken = function(){
-      return access_token;
-    }
-
-    auth.setProvider = function(prov){
-      provider = prov;
-    }
-
-    auth.getProvider = function(){
-      return provider;
-    }
-    auth.setToken = function(token){
-      if(token == null){
-        $window.localStorage.removeItem("token");
-      } else{
-        $window.localStorage.setItem("token", token);
-      }
-      access_token = token;
-    }
-
-    auth.getChannelName = function(){
-      return channelName;
-    }
-
-    auth.setChannelName = function(cn){
-      channelName = cn;
-    }
-
-    auth.getOAuthParams = function(){
-      var oauthParams = {};
-      // parse the query string
-      var params = {}, queryString = location.hash.substring(1),
-        regex = /([^&=]+)=([^&]*)/g, m;
-      while (m = regex.exec(queryString)) {
-        oauthParams[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
-      }
-      return oauthParams
-    }
-
-    function listenForMessage(popup){
-      var deferred = $q.defer();
-
-      angular.element(popup).bind('message', function(ev){
-        if(ev.origin === "http://localhost:3000"){
-          auth.setToken(ev.data.access_token);
-          deferred.resolve(ev.data);
-          $rootScope.$apply();
-          angular.element(popup).unbind('message');
-        }
-      })
-      return deferred.promise;
-    }
-
-    return auth;
   }])
   .factory('Channel', ['$resource', function($resource){
     var ChannelResource = $resource('/channels/:channelId', {}, {
