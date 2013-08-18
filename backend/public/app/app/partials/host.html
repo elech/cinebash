@@ -1,11 +1,11 @@
 <div class="row" ng-controller="MissionController">
-	<div class="col-3">
+	<div class="col-md-4">
 		<div class="input-group">
 			<span class="input-group-btn">
 				<button
-				class="btn btn-primary"
-				ng-click="tabs[0].active=true"
-				ng-show="tabs[1].active">
+					class="btn btn-primary"
+					ng-click="tabs[0].active=true"
+					ng-show="tabs[1].active">
 					<span class="glyphicon glyphicon-chevron-left"></span>
 				</button>
 
@@ -61,7 +61,7 @@
 		</tab>
 	</tabset>
 	</div>
-	<div class="col-9">
+	<div class="col-md-8">
 		<div id="ytplayerContainer">
 			<div ng-show="socketOnline()" class="alert alert-success"><h3>ONLINE</h3></div>
 			<div ng-show="!socketOnline()" class="alert alert-error"><h3>OFFLINE</h3></div>

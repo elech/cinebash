@@ -10,10 +10,12 @@ module.exports = function(io){
 
 	function _list(req, res){
 		var socket = io.sockets.clients(req.params.name)[0]
-		socket.emit('songs:list', {});
-		socket.once('songs:send', function(data){
-			res.send(data);
-		});
+		if(socket){
+			socket.emit('songs:list', {});
+			socket.once('songs:send', function(data){
+				res.send(data);
+			});			
+		}
 	}
 
 	function _del(req, res){
